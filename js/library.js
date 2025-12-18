@@ -82,7 +82,14 @@ function displayResults(mangas, query) {
     document.querySelectorAll('.manga-card').forEach(card => {
         card.addEventListener('click', () => {
             const mangaId = card.dataset.id;
-            window.location.href = `/manga-detail.html?id=${mangaId}`;
+            const source = card.dataset.source || 'mangadex';
+
+            // Redirigir según la fuente
+            if (source === 'mangaplus') {
+                window.location.href = `/manga-detail.html?id=${mangaId}&source=mangaplus`;
+            } else {
+                window.location.href = `/manga-detail.html?id=${mangaId}`;
+            }
         });
     });
 
@@ -95,24 +102,36 @@ function displayResults(mangas, query) {
 function createMangaCard(manga) {
     const typeBadge = getTypeBadge(manga.type);
     const statusBadge = manga.status ? `<span class="badge badge-${manga.status}">${getStatusText(manga.status)}</span>` : '';
+    const sourceBadge = getSourceBadge(manga.source);
 
     return `
-    <div class="manga-card" data-id="${manga.id}">
-      <img 
-        src="${manga.coverUrl}" 
+    <div class="manga-card" data-id="${manga.id}" data-source="${manga.source || 'mangadex'}">
+      <img
+        src="${manga.coverUrl}"
         alt="${manga.title}"
         class="manga-cover"
         loading="lazy"
+        onerror="this.src='/images/no-cover.jpg'"
       >
       <div class="manga-info">
         <h3 class="manga-title">${manga.title}</h3>
         <div class="manga-badges">
+          ${sourceBadge}
           ${typeBadge}
           ${statusBadge}
         </div>
       </div>
     </div>
   `;
+}
+
+// Obtener badge de fuente
+function getSourceBadge(source) {
+    const badges = {
+        'mangadex': '<span class="badge" style="background: #ff6740;">MangaDex</span>',
+        'mangaplus': '<span class="badge" style="background: #dc0000;">M+</span>'
+    };
+    return badges[source] || '';
 }
 
 // Obtener badge de tipo

@@ -1,8 +1,9 @@
 // Lógica de la página de detalles del manga
 
-// Obtener ID del manga de la URL
+// Obtener ID del manga y fuente de la URL
 const urlParams = new URLSearchParams(window.location.search);
 const mangaId = urlParams.get('id');
+const source = urlParams.get('source') || (mangaId && mangaId.startsWith('mangaplus_') ? 'mangaplus' : 'mangadex');
 
 // Elementos del DOM
 const loadingContainer = document.getElementById('loadingContainer');
@@ -29,7 +30,15 @@ if (mangaId) {
 // Cargar detalles del manga
 async function loadMangaDetails() {
     try {
-        const response = await fetch(`/api/manga/${mangaId}`);
+        let apiUrl;
+        if (source === 'mangaplus') {
+            const numericId = mangaId.replace('mangaplus_', '');
+            apiUrl = `/api/mangaplus/${numericId}`;
+        } else {
+            apiUrl = `/api/manga/${mangaId}`;
+        }
+
+        const response = await fetch(apiUrl);
 
         if (!response.ok) {
             throw new Error('Error al cargar detalles');
@@ -39,6 +48,10 @@ async function loadMangaDetails() {
 
         if (data.success) {
             displayMangaDetails(data.manga);
+            // Si es Manga Plus, los capítulos vienen en la misma respuesta
+            if (source === 'mangaplus' && data.chapters) {
+                displayChapters(data.chapters);
+            }
         }
     } catch (error) {
         console.error('Error cargando detalles:', error);
@@ -76,8 +89,13 @@ function displayMangaDetails(manga) {
 
 // Cargar capítulos
 async function loadChapters() {
+    // Si es Manga Plus, los capítulos ya se cargan con los detalles
+    if (source === 'mangaplus') {
+        return;
+    }
+
     try {
-        const response = await fetch(`/api/chapters/${mangaId}?limit=500`);
+        const response = await fetch(`/api/chapters/${mangaId}?limit=100`);
 
         if (!response.ok) {
             throw new Error('Error al cargar capítulos');
@@ -106,7 +124,16 @@ function displayChapters(chapters) {
         item.addEventListener('click', () => {
             const chapterId = item.dataset.id;
             const chapterNumber = item.dataset.chapter;
-            window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}`;
+            const chapterSource = item.dataset.source || source;
+
+            // Manejar según la fuente
+            if (chapterSource === 'mangaplus') {
+                // Manga Plus - abrir en sitio oficial (imágenes encriptadas)
+                const numericId = chapterId.replace('mangaplus_', '');
+                window.open(`https://mangaplus.shueisha.co.jp/viewer/${numericId}`, '_blank');
+            } else {
+                window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}`;
+            }
         });
     });
 }
@@ -118,10 +145,29 @@ function createChapterItem(chapter) {
     const title = chapter.title || `Capítulo ${chapterNumber}`;
     const isExternal = chapter.isExternal || chapter.externalUrl;
     const langFlag = getLangFlag(chapter.translatedLanguage);
+    const chapterSource = chapter.source || source;
+
+    // Para Manga Plus, los capítulos se abren en su sitio oficial
+    if (chapterSource === 'mangaplus') {
+        const numericId = chapter.id.toString().replace('mangaplus_', '');
+        return `
+        <a href="https://mangaplus.shueisha.co.jp/viewer/${numericId}" target="_blank" rel="noopener noreferrer" class="chapter-item chapter-external" data-id="${chapter.id}" data-chapter="${chapterNumber}" data-source="mangaplus">
+          <div class="chapter-info">
+            <h4>Capítulo ${chapterNumber}</h4>
+            ${title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
+          </div>
+          <div>
+            <span class="badge" style="background: #dc0000; color: white;">
+              M+ Leer
+            </span>
+          </div>
+        </a>
+      `;
+    }
 
     if (isExternal) {
         return `
-        <a href="${chapter.externalUrl}" target="_blank" rel="noopener noreferrer" class="chapter-item chapter-external" data-id="${chapter.id}" data-chapter="${chapterNumber}">
+        <a href="${chapter.externalUrl}" target="_blank" rel="noopener noreferrer" class="chapter-item chapter-external" data-id="${chapter.id}" data-chapter="${chapterNumber}" data-source="${chapterSource}">
           <div class="chapter-info">
             <h4>${langFlag} Capítulo ${chapterNumber}${chapter.volume ? ` - Vol. ${chapter.volume}` : ''}</h4>
             ${title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
@@ -137,7 +183,7 @@ function createChapterItem(chapter) {
     }
 
     return `
-    <div class="chapter-item" data-id="${chapter.id}" data-chapter="${chapterNumber}">
+    <div class="chapter-item" data-id="${chapter.id}" data-chapter="${chapterNumber}" data-source="${chapterSource}">
       <div class="chapter-info">
         <h4>${langFlag} Capítulo ${chapterNumber}${chapter.volume ? ` - Vol. ${chapter.volume}` : ''}</h4>
         ${title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
