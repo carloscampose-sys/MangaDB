@@ -18,8 +18,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Servir archivos estáticos
-app.use(express.static('public'));
+// Servir archivos estáticos desde la raíz
+app.use(express.static('.'));
 
 // API Routes
 app.get('/api/search', async (req, res) => {
@@ -150,7 +150,7 @@ app.get('/api/pages/:chapterId', async (req, res) => {
 
 // Servir index.html para todas las rutas no-API
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
