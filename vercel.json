@@ -1,4 +1,8 @@
 {
+    "rewrites": [
+        { "source": "/manga/:path*", "destination": "/manga-detail.html" },
+        { "source": "/reader/:path*", "destination": "/reader.html" }
+    ],
     "headers": [
         {
             "source": "/api/(.*)",
