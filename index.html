@@ -120,6 +120,47 @@
     .filter-btn:hover:not(.active) {
       border-color: var(--accent-primary);
     }
+
+    .filters-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-xl);
+    }
+
+    .filter-select {
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-tertiary);
+      border: 2px solid var(--bg-tertiary);
+      border-radius: var(--radius-lg);
+      color: var(--text-primary);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-select:hover {
+      border-color: var(--accent-primary);
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .source-btn[data-source="mangadex"].active {
+      background: #ff6740;
+      border-color: #ff6740;
+    }
+
+    .source-btn[data-source="mangaplus"].active {
+      background: #dc0000;
+      border-color: #dc0000;
+    }
     
     .manga-card {
       position: relative;
@@ -228,12 +269,44 @@
   <!-- Main Content -->
   <main class="container" style="padding-bottom: var(--space-16);">
     <!-- Filtros -->
-    <div class="filters">
-      <span style="font-weight: 600; color: var(--text-secondary);">Tipo:</span>
-      <button class="filter-btn active" data-type="all">Todos</button>
-      <button class="filter-btn" data-type="manga">🇯🇵 Manga</button>
-      <button class="filter-btn" data-type="manhwa">🇰🇷 Manhwa</button>
-      <button class="filter-btn" data-type="webtoon">🌐 Webtoon</button>
+    <div class="filters-container">
+      <!-- Filtro por Fuente -->
+      <div class="filters">
+        <span style="font-weight: 600; color: var(--text-secondary);">Fuente:</span>
+        <button class="filter-btn source-btn active" data-source="all">Todas</button>
+        <button class="filter-btn source-btn" data-source="mangadex" style="--btn-color: #ff6740;">MangaDex</button>
+        <button class="filter-btn source-btn" data-source="mangaplus" style="--btn-color: #dc0000;">Manga Plus</button>
+      </div>
+
+      <!-- Filtro por Tipo -->
+      <div class="filters">
+        <span style="font-weight: 600; color: var(--text-secondary);">Tipo:</span>
+        <button class="filter-btn type-btn active" data-type="all">Todos</button>
+        <button class="filter-btn type-btn" data-type="manga">🇯🇵 Manga</button>
+        <button class="filter-btn type-btn" data-type="manhwa">🇰🇷 Manhwa</button>
+        <button class="filter-btn type-btn" data-type="manhua">🇨🇳 Manhua</button>
+      </div>
+
+      <!-- Filtro por Género -->
+      <div class="filters genre-filters">
+        <span style="font-weight: 600; color: var(--text-secondary);">Género:</span>
+        <select class="filter-select" id="genreFilter">
+          <option value="all">Todos los géneros</option>
+          <option value="action">Acción</option>
+          <option value="adventure">Aventura</option>
+          <option value="comedy">Comedia</option>
+          <option value="drama">Drama</option>
+          <option value="fantasy">Fantasía</option>
+          <option value="horror">Horror</option>
+          <option value="mystery">Misterio</option>
+          <option value="romance">Romance</option>
+          <option value="sci-fi">Ciencia Ficción</option>
+          <option value="slice of life">Slice of Life</option>
+          <option value="sports">Deportes</option>
+          <option value="supernatural">Sobrenatural</option>
+          <option value="thriller">Thriller</option>
+        </select>
+      </div>
     </div>
 
     <!-- Resultados -->

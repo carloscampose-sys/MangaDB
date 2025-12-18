@@ -1,6 +1,8 @@
 // Lógica de la biblioteca (búsqueda y visualización de mangas)
 
-let currentFilter = 'all';
+let currentType = 'all';
+let currentSource = 'all';
+let currentGenre = 'all';
 let searchTimeout = null;
 
 // Elementos del DOM
@@ -11,9 +13,11 @@ const resultsTitle = document.getElementById('resultsTitle');
 const resultsCount = document.getElementById('resultsCount');
 const loadingContainer = document.getElementById('loadingContainer');
 const noResults = document.getElementById('noResults');
-const filterButtons = document.querySelectorAll('.filter-btn');
+const typeButtons = document.querySelectorAll('.type-btn');
+const sourceButtons = document.querySelectorAll('.source-btn');
+const genreFilter = document.getElementById('genreFilter');
 
-// Event Listeners
+// Event Listeners - Búsqueda
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value.trim();
 
@@ -29,16 +33,13 @@ searchInput.addEventListener('input', (e) => {
     }
 });
 
-filterButtons.forEach(btn => {
+// Event Listeners - Filtro de Tipo
+typeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Actualizar botón activo
-        filterButtons.forEach(b => b.classList.remove('active'));
+        typeButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        currentType = btn.dataset.type;
 
-        // Actualizar filtro
-        currentFilter = btn.dataset.type;
-
-        // Buscar de nuevo si hay texto
         const query = searchInput.value.trim();
         if (query.length >= 2) {
             searchMangas(query);
@@ -46,12 +47,43 @@ filterButtons.forEach(btn => {
     });
 });
 
+// Event Listeners - Filtro de Fuente
+sourceButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        sourceButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSource = btn.dataset.source;
+
+        const query = searchInput.value.trim();
+        if (query.length >= 2) {
+            searchMangas(query);
+        }
+    });
+});
+
+// Event Listeners - Filtro de Género
+genreFilter.addEventListener('change', (e) => {
+    currentGenre = e.target.value;
+
+    const query = searchInput.value.trim();
+    if (query.length >= 2) {
+        searchMangas(query);
+    }
+});
+
 // Buscar mangas
 async function searchMangas(query) {
     showLoading();
 
     try {
-        const url = `/api/search?q=${encodeURIComponent(query)}&type=${currentFilter}&limit=30`;
+        // Construir URL con todos los filtros
+        let url = `/api/search?q=${encodeURIComponent(query)}&limit=30`;
+        url += `&type=${currentType}`;
+        url += `&source=${currentSource}`;
+        if (currentGenre !== 'all') {
+            url += `&genre=${encodeURIComponent(currentGenre)}`;
+        }
+
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -61,7 +93,21 @@ async function searchMangas(query) {
         const data = await response.json();
 
         if (data.success && data.results.length > 0) {
-            displayResults(data.results, query);
+            // Filtrar por género en el frontend si la API no lo soporta
+            let results = data.results;
+            if (currentGenre !== 'all') {
+                results = results.filter(manga =>
+                    manga.tags && manga.tags.some(tag =>
+                        tag.toLowerCase().includes(currentGenre.toLowerCase())
+                    )
+                );
+            }
+
+            if (results.length > 0) {
+                displayResults(results, query);
+            } else {
+                showNoResults();
+            }
         } else {
             showNoResults();
         }
@@ -74,7 +120,15 @@ async function searchMangas(query) {
 // Mostrar resultados
 function displayResults(mangas, query) {
     resultsTitle.textContent = `Resultados para "${query}"`;
-    resultsCount.textContent = `${mangas.length} ${mangas.length === 1 ? 'resultado' : 'resultados'}`;
+
+    // Mostrar info de filtros activos
+    let filterInfo = [];
+    if (currentSource !== 'all') filterInfo.push(currentSource === 'mangadex' ? 'MangaDex' : 'Manga Plus');
+    if (currentType !== 'all') filterInfo.push(currentType);
+    if (currentGenre !== 'all') filterInfo.push(currentGenre);
+
+    const filterText = filterInfo.length > 0 ? ` (${filterInfo.join(', ')})` : '';
+    resultsCount.textContent = `${mangas.length} resultado${mangas.length !== 1 ? 's' : ''}${filterText}`;
 
     resultsGrid.innerHTML = mangas.map(manga => createMangaCard(manga)).join('');
 
@@ -84,7 +138,6 @@ function displayResults(mangas, query) {
             const mangaId = card.dataset.id;
             const source = card.dataset.source || 'mangadex';
 
-            // Redirigir según la fuente
             if (source === 'mangaplus') {
                 window.location.href = `/manga-detail.html?id=${mangaId}&source=mangaplus`;
             } else {
@@ -179,6 +232,13 @@ function hideResults() {
 function showNoResults() {
     hideLoading();
     resultsSection.style.display = 'none';
+    noResults.innerHTML = `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 120px; height: 120px; margin-bottom: var(--space-6); opacity: 0.5;">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <h3>No se encontraron resultados</h3>
+    <p>Intenta con otro término de búsqueda o cambia los filtros</p>
+  `;
     noResults.style.display = 'block';
 }
 
@@ -198,3 +258,6 @@ function showError() {
 
 // Auto-focus en el input de búsqueda
 searchInput.focus();
+
+// Ocultar loading inicial
+loadingContainer.style.display = 'none';
