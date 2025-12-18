@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Manga - MangaLib</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <style>
+        .header {
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-4) 0;
+        }
+
+        .logo {
+            font-size: var(--text-2xl);
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: none;
+            padding: var(--space-2);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: var(--text-xl);
+            transition: all var(--transition-fast);
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-6);
+        }
+
+        .back-button:hover {
+            color: var(--accent-primary);
+        }
+
+        .manga-hero {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-12);
+        }
+
+        .manga-cover-large {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .manga-header h1 {
+            margin-bottom: var(--space-3);
+        }
+
+        .manga-meta {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-4);
+        }
+
+        .manga-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: var(--space-6);
+        }
+
+        .manga-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-4);
+            padding: var(--space-6);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-value {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .chapters-section {
+            margin-top: var(--space-12);
+        }
+
+        .chapters-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+        }
+
+        .chapter-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(8px);
+        }
+
+        .chapter-info h4 {
+            margin-bottom: var(--space-1);
+            font-size: var(--text-base);
+        }
+
+        .chapter-date {
+            font-size: var(--text-sm);
+            color: var(--text-tertiary);
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: var(--space-4);
+        }
+
+        @media (max-width: 768px) {
+            .manga-hero {
+                grid-template-columns: 1fr;
+                gap: var(--space-6);
+            }
+
+            .manga-cover-large {
+                max-width: 300px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">📚 MangaLib</a>
+                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+                    🌙
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container" style="padding: var(--space-8) var(--space-4) var(--space-16);">
+        <a href="/" class="back-button">← Volver a la biblioteca</a>
+
+        <!-- Loading -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary);">Cargando detalles...</p>
+        </div>
+
+        <!-- Manga Details -->
+        <div id="mangaDetails" style="display: none;">
+            <!-- Hero Section -->
+            <div class="manga-hero">
+                <img id="mangaCover" src="" alt="" class="manga-cover-large">
+
+                <div>
+                    <div class="manga-header">
+                        <h1 id="mangaTitle"></h1>
+                        <div class="manga-meta" id="mangaMeta"></div>
+                        <p class="manga-description" id="mangaDescription"></p>
+                    </div>
+
+                    <div class="manga-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Estado</div>
+                            <div class="stat-value" id="mangaStatus"></div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Año</div>
+                            <div class="stat-value" id="mangaYear"></div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Autor</div>
+                            <div class="stat-value" id="mangaAuthor"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chapters Section -->
+            <section class="chapters-section">
+                <h2>Capítulos</h2>
+                <div id="chaptersLoading" style="text-align: center; padding: var(--space-8);">
+                    <div class="spinner" style="margin: 0 auto;"></div>
+                </div>
+                <div class="chapters-list" id="chaptersList"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script type="module" src="/js/theme.js"></script>
+    <script type="module" src="/js/manga-detail.js"></script>
+</body>
+
+</html>

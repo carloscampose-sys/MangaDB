@@ -1,0 +1,20 @@
+{
+  "name": "manga-biblioteca",
+  "version": "1.0.0",
+  "description": "Biblioteca completa de mangas, manhwas y webtoons en español",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "dev:vercel": "vercel dev",
+    "build": "echo 'No build step needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.22.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
