@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "node server.js",
     "dev:vercel": "vercel dev",
-    "build": "echo 'No build step needed'",
     "deploy": "vercel --prod"
   },
   "dependencies": {
