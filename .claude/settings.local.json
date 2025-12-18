@@ -6,7 +6,17 @@
       "WebFetch(domain:api.comick.fun)",
       "WebFetch(domain:github.com)",
       "Bash(md \"C:\\Users\\Isma\\Documents\\Proyectos Perosnakes\\Pagina Manga\\api\\mangaplus\")",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "WebFetch(domain:lectortmo.com)",
+      "WebFetch(domain:inmanga.com)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(nslookup:*)",
+      "Bash(cat:*)",
+      "Bash(rm:*)",
+      "Bash(node test-webtoons.mjs:*)",
+      "Bash(node test-tumanga.mjs:*)",
+      "Bash(grep:*)"
     ]
   }
 }

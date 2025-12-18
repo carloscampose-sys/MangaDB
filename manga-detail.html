@@ -171,6 +171,100 @@
             gap: var(--space-4);
         }
 
+        .manga-actions {
+            display: flex;
+            gap: var(--space-3);
+            margin-top: var(--space-6);
+        }
+
+        .btn-favorite {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            background: var(--bg-tertiary);
+            border: 2px solid var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-favorite:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-favorite.is-favorite {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .btn-favorite .heart {
+            font-size: var(--text-xl);
+            transition: transform var(--transition-fast);
+        }
+
+        .btn-favorite:hover .heart {
+            transform: scale(1.2);
+        }
+
+        .btn-collection {
+            padding: var(--space-3) var(--space-4);
+            background: var(--bg-tertiary);
+            border: 2px solid var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-collection:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .collection-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .collection-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: var(--space-2);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+            z-index: 50;
+            display: none;
+        }
+
+        .collection-menu.show {
+            display: block;
+        }
+
+        .collection-menu-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .collection-menu-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .collection-menu-item:first-child {
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .collection-menu-item:last-child {
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
         @media (max-width: 768px) {
             .manga-hero {
                 grid-template-columns: 1fr;
@@ -235,6 +329,23 @@
                             <div class="stat-value" id="mangaAuthor"></div>
                         </div>
                     </div>
+
+                    <!-- Acciones: Favoritos y Colecciones -->
+                    <div class="manga-actions">
+                        <button class="btn-favorite" id="favoriteBtn" onclick="toggleFavorite()">
+                            <span class="heart" id="favoriteHeart">🤍</span>
+                            <span id="favoriteText">Agregar a favoritos</span>
+                        </button>
+
+                        <div class="collection-dropdown">
+                            <button class="btn-collection" onclick="toggleCollectionMenu()">
+                                📁 Colección
+                            </button>
+                            <div class="collection-menu" id="collectionMenu">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -250,8 +361,101 @@
     </main>
 
     <!-- JavaScript -->
+    <script src="/js/favorites.js"></script>
     <script type="module" src="/js/theme.js"></script>
     <script type="module" src="/js/manga-detail.js"></script>
+    <script>
+        // Variables para favoritos
+        let currentMangaData = null;
+
+        // Toggle favorito
+        function toggleFavorite() {
+            if (!currentMangaData) return;
+
+            const isFav = Favorites.toggle(currentMangaData);
+            updateFavoriteButton(isFav);
+        }
+
+        // Actualizar UI del botón favorito
+        function updateFavoriteButton(isFavorite) {
+            const btn = document.getElementById('favoriteBtn');
+            const heart = document.getElementById('favoriteHeart');
+            const text = document.getElementById('favoriteText');
+
+            if (isFavorite) {
+                btn.classList.add('is-favorite');
+                heart.textContent = '❤️';
+                text.textContent = 'En favoritos';
+            } else {
+                btn.classList.remove('is-favorite');
+                heart.textContent = '🤍';
+                text.textContent = 'Agregar a favoritos';
+            }
+        }
+
+        // Toggle menú de colecciones
+        function toggleCollectionMenu() {
+            const menu = document.getElementById('collectionMenu');
+            menu.classList.toggle('show');
+
+            if (menu.classList.contains('show')) {
+                loadCollectionMenu();
+            }
+        }
+
+        // Cargar menú de colecciones
+        function loadCollectionMenu() {
+            const menu = document.getElementById('collectionMenu');
+            const collections = Favorites.getCollections();
+            const urlParams = new URLSearchParams(window.location.search);
+            const mangaId = urlParams.get('id');
+            const source = urlParams.get('source') || 'mangadex';
+
+            const favorites = Favorites.getAll();
+            const currentFav = favorites.find(f => f.id === mangaId && f.source === source);
+            const currentCollections = currentFav?.collections || [];
+
+            menu.innerHTML = collections.map(col => {
+                const isInCollection = currentCollections.includes(col.id);
+                return `
+                    <div class="collection-menu-item" onclick="toggleCollection('${col.id}')">
+                        <span>${col.icon}</span>
+                        <span>${col.name}</span>
+                        ${isInCollection ? '<span style="margin-left: auto;">✓</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle colección
+        function toggleCollection(collectionId) {
+            if (!currentMangaData) return;
+
+            // Primero asegurarse de que esté en favoritos
+            if (!Favorites.isFavorite(currentMangaData.id, currentMangaData.source)) {
+                Favorites.add(currentMangaData);
+                updateFavoriteButton(true);
+            }
+
+            Favorites.addToCollection(currentMangaData.id, currentMangaData.source, collectionId);
+            loadCollectionMenu();
+        }
+
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            const dropdown = document.querySelector('.collection-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                document.getElementById('collectionMenu').classList.remove('show');
+            }
+        });
+
+        // Escuchar cuando se cargan los datos del manga
+        window.addEventListener('manga-loaded', (e) => {
+            currentMangaData = e.detail;
+            const isFav = Favorites.isFavorite(currentMangaData.id, currentMangaData.source);
+            updateFavoriteButton(isFav);
+        });
+    </script>
 </body>
 
 </html>

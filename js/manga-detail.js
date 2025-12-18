@@ -3,7 +3,16 @@
 // Obtener ID del manga y fuente de la URL
 const urlParams = new URLSearchParams(window.location.search);
 const mangaId = urlParams.get('id');
-const source = urlParams.get('source') || (mangaId && mangaId.startsWith('mangaplus_') ? 'mangaplus' : 'mangadex');
+
+// Detectar fuente automáticamente basado en el ID
+function detectSource(id, urlSource) {
+    if (urlSource) return urlSource;
+    if (id && id.startsWith('mangaplus_')) return 'mangaplus';
+    if (id && id.startsWith('webtoons-')) return 'webtoons';
+    if (id && id.startsWith('tumanga-')) return 'tumanga';
+    return 'mangadex';
+}
+const source = detectSource(mangaId, urlParams.get('source'));
 
 // Elementos del DOM
 const loadingContainer = document.getElementById('loadingContainer');
@@ -34,6 +43,12 @@ async function loadMangaDetails() {
         if (source === 'mangaplus') {
             const numericId = mangaId.replace('mangaplus_', '');
             apiUrl = `/api/mangaplus/${numericId}`;
+        } else if (source === 'webtoons') {
+            const webtoonId = mangaId.replace('webtoons-', '');
+            apiUrl = `/api/webtoons/${webtoonId}`;
+        } else if (source === 'tumanga') {
+            const tumangaSlug = mangaId.replace('tumanga-', '');
+            apiUrl = `/api/tumanga/${tumangaSlug}`;
         } else {
             apiUrl = `/api/manga/${mangaId}`;
         }
@@ -48,8 +63,8 @@ async function loadMangaDetails() {
 
         if (data.success) {
             displayMangaDetails(data.manga);
-            // Si es Manga Plus, los capítulos vienen en la misma respuesta
-            if (source === 'mangaplus' && data.chapters) {
+            // Si es Manga Plus, Webtoons o TuManga, los capítulos vienen en la misma respuesta
+            if ((source === 'mangaplus' || source === 'webtoons' || source === 'tumanga') && data.chapters) {
                 displayChapters(data.chapters);
             }
         }
@@ -85,12 +100,24 @@ function displayMangaDetails(manga) {
     // Mostrar detalles y ocultar loading
     loadingContainer.style.display = 'none';
     mangaDetails.style.display = 'block';
+
+    // Disparar evento para sistema de favoritos
+    window.dispatchEvent(new CustomEvent('manga-loaded', {
+        detail: {
+            id: mangaId,
+            source: source,
+            title: manga.title,
+            coverUrl: manga.coverUrl,
+            type: manga.type,
+            status: manga.status
+        }
+    }));
 }
 
 // Cargar capítulos
 async function loadChapters() {
-    // Si es Manga Plus, los capítulos ya se cargan con los detalles
-    if (source === 'mangaplus') {
+    // Si es Manga Plus, Webtoons o TuManga, los capítulos ya se cargan con los detalles
+    if (source === 'mangaplus' || source === 'webtoons' || source === 'tumanga') {
         return;
     }
 
@@ -131,6 +158,19 @@ function displayChapters(chapters) {
                 // Manga Plus - abrir en sitio oficial (imágenes encriptadas)
                 const numericId = chapterId.replace('mangaplus_', '');
                 window.open(`https://mangaplus.shueisha.co.jp/viewer/${numericId}`, '_blank');
+            } else if (chapterSource === 'webtoons') {
+                // Webtoons - abrir en sitio oficial
+                const episodeUrl = item.dataset.url;
+                if (episodeUrl) {
+                    window.open(episodeUrl, '_blank');
+                } else {
+                    // Fallback: ir al reader local (si tenemos las imágenes)
+                    window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}&source=webtoons`;
+                }
+            } else if (chapterSource === 'tumanga') {
+                // TuManga - leer en nuestro reader local
+                const slug = item.dataset.slug;
+                window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}&source=tumanga&slug=${slug}`;
             } else {
                 window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}`;
             }
@@ -162,6 +202,43 @@ function createChapterItem(chapter) {
             </span>
           </div>
         </a>
+      `;
+    }
+
+    // Para Webtoons, los capítulos se abren en su sitio oficial
+    if (chapterSource === 'webtoons') {
+        const episodeUrl = chapter.url || '#';
+        return `
+        <a href="${episodeUrl}" target="_blank" rel="noopener noreferrer" class="chapter-item chapter-external" data-id="${chapter.id}" data-chapter="${chapterNumber}" data-source="webtoons" data-url="${episodeUrl}">
+          <div class="chapter-info">
+            <h4>Episodio ${chapterNumber}</h4>
+            ${title !== `Episodio ${chapterNumber}` && title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
+            ${date ? `<span class="chapter-date">${date}</span>` : ''}
+          </div>
+          <div>
+            <span class="badge" style="background: #00d564; color: white;">
+              Webtoons
+            </span>
+          </div>
+        </a>
+      `;
+    }
+
+    // Para TuManga, los capítulos se leen en nuestro reader local
+    if (chapterSource === 'tumanga') {
+        return `
+        <div class="chapter-item" data-id="${chapter.id}" data-chapter="${chapterNumber}" data-source="tumanga" data-slug="${chapter.slug || ''}">
+          <div class="chapter-info">
+            <h4>Capítulo ${chapterNumber}</h4>
+            ${title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
+            ${date ? `<span class="chapter-date">${date}</span>` : ''}
+          </div>
+          <div>
+            <span class="badge" style="background: #ff6b35; color: white;">
+              TuManga
+            </span>
+          </div>
+        </div>
       `;
     }
 

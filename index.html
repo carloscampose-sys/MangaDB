@@ -161,6 +161,11 @@
       background: #dc0000;
       border-color: #dc0000;
     }
+
+    .source-btn[data-source="webtoons"].active {
+      background: #00d564;
+      border-color: #00d564;
+    }
     
     .manga-card {
       position: relative;
@@ -268,14 +273,50 @@
 
   <!-- Main Content -->
   <main class="container" style="padding-bottom: var(--space-16);">
+    <!-- Sección Continuar Leyendo -->
+    <section id="continueReadingSection" class="continue-reading-section" style="display: none; margin-bottom: var(--space-8);">
+      <div class="results-header">
+        <h2>Continuar leyendo</h2>
+        <button class="filter-btn" onclick="clearReadingHistory()" style="font-size: var(--text-xs);">Limpiar historial</button>
+      </div>
+      <div class="grid grid-cols-5" id="continueReadingGrid">
+        <!-- Mangas en progreso se cargarán aquí -->
+      </div>
+    </section>
+
+    <!-- Sección Favoritos -->
+    <section id="favoritesSection" style="display: none; margin-bottom: var(--space-8);">
+      <div class="results-header">
+        <h2>Mis favoritos</h2>
+        <div style="display: flex; gap: var(--space-2); align-items: center;">
+          <select class="filter-select" id="favoritesFilter" onchange="loadFavorites()" style="font-size: var(--text-xs);">
+            <option value="all">Todos</option>
+            <option value="reading">Leyendo</option>
+            <option value="plan-to-read">Por leer</option>
+            <option value="completed">Completados</option>
+          </select>
+          <button class="filter-btn" onclick="exportFavorites()" style="font-size: var(--text-xs);">Exportar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-5" id="favoritesGrid">
+        <!-- Favoritos se cargarán aquí -->
+      </div>
+    </section>
+
     <!-- Filtros -->
     <div class="filters-container">
       <!-- Filtro por Fuente -->
-      <div class="filters">
+      <div class="filters" style="flex-wrap: wrap;">
         <span style="font-weight: 600; color: var(--text-secondary);">Fuente:</span>
         <button class="filter-btn source-btn active" data-source="all">Todas</button>
-        <button class="filter-btn source-btn" data-source="mangadex" style="--btn-color: #ff6740;">MangaDex</button>
-        <button class="filter-btn source-btn" data-source="mangaplus" style="--btn-color: #dc0000;">Manga Plus</button>
+        <button class="filter-btn source-btn" data-source="mangadex">MangaDex</button>
+        <button class="filter-btn source-btn" data-source="mangaplus">M+</button>
+        <button class="filter-btn source-btn" data-source="webtoons">Webtoons</button>
+        <button class="filter-btn source-btn" data-source="tumanga">TuManga</button>
+        <button class="filter-btn source-btn" data-source="visormanga">VisorManga</button>
+        <button class="filter-btn source-btn" data-source="mangalector">MangaLector</button>
+        <button class="filter-btn source-btn" data-source="anilist">AniList</button>
+        <button class="filter-btn source-btn" data-source="jikan">MAL</button>
       </div>
 
       <!-- Filtro por Tipo -->
@@ -338,7 +379,140 @@
   </main>
 
   <!-- JavaScript -->
+  <script src="/js/reading-history.js"></script>
+  <script src="/js/favorites.js"></script>
   <script type="module" src="/js/theme.js"></script>
   <script type="module" src="/js/library.js"></script>
+  <script>
+    // Cargar secciones al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+      loadContinueReading();
+      loadFavorites();
+    });
+
+    function loadContinueReading() {
+      const continueReading = ReadingHistory.getContinue(10);
+      const section = document.getElementById('continueReadingSection');
+      const grid = document.getElementById('continueReadingGrid');
+
+      if (continueReading.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      grid.innerHTML = continueReading.map(item => `
+        <div class="manga-card" onclick="goToManga('${item.mangaId}', '${item.source}')" style="cursor: pointer;">
+          <div style="position: relative;">
+            <img
+              src="${item.coverUrl}"
+              alt="${item.title}"
+              class="manga-cover"
+              loading="lazy"
+              onerror="this.src='/images/no-cover.jpg'"
+            >
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: var(--space-2); border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+              <div style="background: var(--bg-tertiary); border-radius: var(--radius-sm); height: 4px; overflow: hidden;">
+                <div style="background: var(--accent-primary); height: 100%; width: ${item.progress}%;"></div>
+              </div>
+              <small style="color: white; font-size: 10px;">Cap. ${item.lastChapterNum} - ${item.progress}%</small>
+            </div>
+          </div>
+          <div class="manga-info">
+            <h3 class="manga-title">${item.title}</h3>
+            <small style="color: var(--text-secondary);">${ReadingHistory.formatTimeAgo(item.lastReadAt)}</small>
+          </div>
+        </div>
+      `).join('');
+
+      section.style.display = 'block';
+    }
+
+    function goToManga(mangaId, source) {
+      window.location.href = `/manga-detail.html?id=${mangaId}&source=${source || 'mangadex'}`;
+    }
+
+    function clearReadingHistory() {
+      if (confirm('¿Estás seguro de que quieres limpiar tu historial de lectura?')) {
+        ReadingHistory.clear();
+        document.getElementById('continueReadingSection').style.display = 'none';
+      }
+    }
+
+    // ============ FAVORITOS ============
+    function loadFavorites() {
+      const filter = document.getElementById('favoritesFilter')?.value || 'all';
+      const favorites = Favorites.getFiltered({
+        collection: filter !== 'all' ? filter : undefined,
+        sortBy: 'recent'
+      });
+
+      const section = document.getElementById('favoritesSection');
+      const grid = document.getElementById('favoritesGrid');
+
+      if (favorites.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      grid.innerHTML = favorites.slice(0, 10).map(fav => `
+        <div class="manga-card" onclick="goToManga('${fav.id}', '${fav.source}')" style="cursor: pointer; position: relative;">
+          <button onclick="event.stopPropagation(); removeFavorite('${fav.id}', '${fav.source}')"
+                  style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; z-index: 10; font-size: 14px;">
+            ❌
+          </button>
+          <img
+            src="${fav.coverUrl}"
+            alt="${fav.title}"
+            class="manga-cover"
+            loading="lazy"
+            onerror="this.src='/images/no-cover.jpg'"
+          >
+          <div class="manga-info">
+            <h3 class="manga-title">${fav.title}</h3>
+            <div class="manga-badges">
+              ${getSourceBadgeHTML(fav.source)}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      section.style.display = 'block';
+    }
+
+    function removeFavorite(mangaId, source) {
+      Favorites.remove(mangaId, source);
+      loadFavorites();
+    }
+
+    function getSourceBadgeHTML(source) {
+      const badges = {
+        'mangadex': '<span class="badge" style="background: #ff6740;">MangaDex</span>',
+        'mangaplus': '<span class="badge" style="background: #dc0000;">M+</span>',
+        'webtoons': '<span class="badge" style="background: #00d564;">Webtoons</span>',
+        'tumanga': '<span class="badge" style="background: #ff6b35;">TuManga</span>',
+        'anilist': '<span class="badge" style="background: #02a9ff;">AniList</span>',
+        'jikan': '<span class="badge" style="background: #2e51a2;">MAL</span>',
+        'visormanga': '<span class="badge" style="background: #9333ea;">VisorManga</span>',
+        'mangalector': '<span class="badge" style="background: #f59e0b;">MangaLector</span>'
+      };
+      return badges[source] || '';
+    }
+
+    function exportFavorites() {
+      const data = Favorites.export();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mangalib-favoritos-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Escuchar actualizaciones de favoritos
+    window.addEventListener('favorites-updated', () => {
+      loadFavorites();
+    });
+  </script>
 </body>
 </html>
