@@ -5,7 +5,8 @@
       "Bash(node -e:*)",
       "WebFetch(domain:api.comick.fun)",
       "WebFetch(domain:github.com)",
-      "Bash(md \"C:\\Users\\Isma\\Documents\\Proyectos Perosnakes\\Pagina Manga\\api\\mangaplus\")"
+      "Bash(md \"C:\\Users\\Isma\\Documents\\Proyectos Perosnakes\\Pagina Manga\\api\\mangaplus\")",
+      "Bash(xxd:*)"
     ]
   }
 }
