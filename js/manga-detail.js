@@ -101,8 +101,8 @@ function displayChapters(chapters) {
     chaptersList.innerHTML = chapters.map(chapter => createChapterItem(chapter)).join('');
     chaptersLoading.style.display = 'none';
 
-    // Event listeners
-    document.querySelectorAll('.chapter-item').forEach(item => {
+    // Event listeners solo para capítulos no externos (los externos son <a> tags)
+    document.querySelectorAll('.chapter-item:not(.chapter-external)').forEach(item => {
         item.addEventListener('click', () => {
             const chapterId = item.dataset.id;
             const chapterNumber = item.dataset.chapter;
@@ -116,21 +116,58 @@ function createChapterItem(chapter) {
     const date = chapter.publishAt ? formatDate(chapter.publishAt) : '';
     const chapterNumber = chapter.chapter || '0';
     const title = chapter.title || `Capítulo ${chapterNumber}`;
+    const isExternal = chapter.isExternal || chapter.externalUrl;
+    const langFlag = getLangFlag(chapter.translatedLanguage);
+
+    if (isExternal) {
+        return `
+        <a href="${chapter.externalUrl}" target="_blank" rel="noopener noreferrer" class="chapter-item chapter-external" data-id="${chapter.id}" data-chapter="${chapterNumber}">
+          <div class="chapter-info">
+            <h4>${langFlag} Capítulo ${chapterNumber}${chapter.volume ? ` - Vol. ${chapter.volume}` : ''}</h4>
+            ${title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
+            <span class="chapter-date">${date}</span>
+          </div>
+          <div>
+            <span class="badge" style="background: var(--accent-primary); color: white;">
+              🔗 Externo
+            </span>
+          </div>
+        </a>
+      `;
+    }
 
     return `
     <div class="chapter-item" data-id="${chapter.id}" data-chapter="${chapterNumber}">
       <div class="chapter-info">
-        <h4>Capítulo ${chapterNumber}${chapter.volume ? ` - Vol. ${chapter.volume}` : ''}</h4>
+        <h4>${langFlag} Capítulo ${chapterNumber}${chapter.volume ? ` - Vol. ${chapter.volume}` : ''}</h4>
         ${title !== `Capítulo ${chapterNumber}` ? `<p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-1);">${title}</p>` : ''}
         <span class="chapter-date">${date}</span>
       </div>
       <div>
         <span class="badge" style="background: var(--bg-tertiary);">
-          ${chapter.pages || '?'} páginas
+          ${chapter.pages || '?'} págs
         </span>
       </div>
     </div>
   `;
+}
+
+// Obtener bandera del idioma
+function getLangFlag(lang) {
+    const flags = {
+        'es': '🇪🇸',
+        'es-la': '🇲🇽',
+        'en': '🇬🇧',
+        'pt-br': '🇧🇷',
+        'fr': '🇫🇷',
+        'de': '🇩🇪',
+        'it': '🇮🇹',
+        'ru': '🇷🇺',
+        'ja': '🇯🇵',
+        'ko': '🇰🇷',
+        'zh': '🇨🇳'
+    };
+    return flags[lang] || '🌐';
 }
 
 // Obtener badge de tipo
