@@ -430,21 +430,11 @@ function prefetchMangaDetails(mangaId, source) {
     prefetchCache.set(cacheKey, 'loading');
 
     // Construir URL según la fuente
+    const unifiedSources = ['mangaplus', 'webtoons', 'tumanga', 'anilist', 'jikan', 'visormanga', 'mangalector'];
     let apiUrl;
-    if (source === 'mangaplus') {
-        apiUrl = `/api/mangaplus/${mangaId.replace('mangaplus_', '')}`;
-    } else if (source === 'webtoons') {
-        apiUrl = `/api/webtoons/${mangaId.replace('webtoons-', '')}`;
-    } else if (source === 'tumanga') {
-        apiUrl = `/api/tumanga/${mangaId.replace('tumanga-', '')}`;
-    } else if (source === 'anilist') {
-        apiUrl = `/api/anilist/${mangaId.replace('anilist-', '')}`;
-    } else if (source === 'jikan') {
-        apiUrl = `/api/jikan/${mangaId.replace('jikan-', '')}`;
-    } else if (source === 'visormanga') {
-        apiUrl = `/api/visormanga/${mangaId.replace('visormanga-', '')}`;
-    } else if (source === 'mangalector') {
-        apiUrl = `/api/mangalector/${mangaId.replace('mangalector-', '')}`;
+
+    if (unifiedSources.includes(source)) {
+        apiUrl = `/api/source/${source}/${mangaId}`;
     } else {
         apiUrl = `/api/manga/${mangaId}`;
     }

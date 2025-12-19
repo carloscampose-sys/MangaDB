@@ -4,7 +4,7 @@
   "description": "Biblioteca completa de mangas, manhwas y webtoons en español",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "node server.js",

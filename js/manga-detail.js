@@ -44,28 +44,13 @@ if (mangaId) {
 async function loadMangaDetails() {
     try {
         let apiUrl;
-        if (source === 'mangaplus') {
-            const numericId = mangaId.replace('mangaplus_', '');
-            apiUrl = `/api/mangaplus/${numericId}`;
-        } else if (source === 'webtoons') {
-            const webtoonId = mangaId.replace('webtoons-', '');
-            apiUrl = `/api/webtoons/${webtoonId}`;
-        } else if (source === 'tumanga') {
-            const tumangaSlug = mangaId.replace('tumanga-', '');
-            apiUrl = `/api/tumanga/${tumangaSlug}`;
-        } else if (source === 'anilist') {
-            const anilistId = mangaId.replace('anilist-', '');
-            apiUrl = `/api/anilist/${anilistId}`;
-        } else if (source === 'jikan') {
-            const jikanId = mangaId.replace('jikan-', '');
-            apiUrl = `/api/jikan/${jikanId}`;
-        } else if (source === 'visormanga') {
-            const visormangaSlug = mangaId.replace('visormanga-', '');
-            apiUrl = `/api/visormanga/${visormangaSlug}`;
-        } else if (source === 'mangalector') {
-            const mangalectorSlug = mangaId.replace('mangalector-', '');
-            apiUrl = `/api/mangalector/${mangalectorSlug}`;
+        // Fuentes que usan API unificada
+        const unifiedSources = ['mangaplus', 'webtoons', 'tumanga', 'anilist', 'jikan', 'visormanga', 'mangalector'];
+
+        if (unifiedSources.includes(source)) {
+            apiUrl = `/api/source/${source}/${mangaId}`;
         } else {
+            // MangaDex usa su propia API
             apiUrl = `/api/manga/${mangaId}`;
         }
 
