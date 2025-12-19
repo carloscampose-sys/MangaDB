@@ -16,7 +16,8 @@
       "Bash(rm:*)",
       "Bash(node test-webtoons.mjs:*)",
       "Bash(node test-tumanga.mjs:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(node:*)"
     ]
   }
 }
