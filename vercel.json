@@ -8,11 +8,6 @@
         }
     },
     "rewrites": [
-        { "source": "/api/search", "destination": "/api/search" },
-        { "source": "/api/manga/:id", "destination": "/api/manga/:id" },
-        { "source": "/api/chapters/:id", "destination": "/api/chapters/:id" },
-        { "source": "/api/pages/:id", "destination": "/api/pages/:id" },
-        { "source": "/api/source/:path*", "destination": "/api/source/:path*" },
         { "source": "/manga/:path*", "destination": "/manga-detail.html" },
         { "source": "/reader/:path*", "destination": "/reader.html" }
     ],

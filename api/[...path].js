@@ -12,16 +12,16 @@
  */
 
 // Importar clientes MangaDex
-import { searchManga, getMangaDetails, getMangaChapters, getChapterPages } from '../lib/mangadex-client.js';
+import { searchManga, getMangaDetails, getMangaChapters, getChapterPages } from './_lib/mangadex-client.js';
 
 // Importar clientes de otras fuentes
-import { searchMangaPlus, formatMangaPlusTitle, getTitleDetail as getMangaPlusDetails } from '../lib/mangaplus-client.js';
-import { searchWebtoons, formatWebtoonResult, getWebtoonDetails, getWebtoonChapters, getEpisodePages } from '../lib/webtoons-client.js';
-import { searchTuManga, formatTuMangaResult, getTuMangaDetails, getTuMangaChapters, getTuMangaPages } from '../lib/tumanga-client.js';
-import { searchAniList, formatAniListResult, getAniListDetails } from '../lib/anilist-client.js';
-import { searchJikan, formatJikanResult, getJikanDetails } from '../lib/jikan-client.js';
-import { searchVisorManga, formatVisorMangaResult, getVisorMangaDetails, getVisorMangaChapters, getVisorMangaPages } from '../lib/visormanga-client.js';
-import { searchMangaLector, formatMangaLectorResult, getMangaLectorDetails, getMangaLectorChapters, getMangaLectorPages } from '../lib/mangalector-client.js';
+import { searchMangaPlus, formatMangaPlusTitle, getTitleDetail as getMangaPlusDetails } from './_lib/mangaplus-client.js';
+import { searchWebtoons, formatWebtoonResult, getWebtoonDetails, getWebtoonChapters, getEpisodePages } from './_lib/webtoons-client.js';
+import { searchTuManga, formatTuMangaResult, getTuMangaDetails, getTuMangaChapters, getTuMangaPages } from './_lib/tumanga-client.js';
+import { searchAniList, formatAniListResult, getAniListDetails } from './_lib/anilist-client.js';
+import { searchJikan, formatJikanResult, getJikanDetails } from './_lib/jikan-client.js';
+import { searchVisorManga, formatVisorMangaResult, getVisorMangaDetails, getVisorMangaChapters, getVisorMangaPages } from './_lib/visormanga-client.js';
+import { searchMangaLector, formatMangaLectorResult, getMangaLectorDetails, getMangaLectorChapters, getMangaLectorPages } from './_lib/mangalector-client.js';
 
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
