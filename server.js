@@ -2,16 +2,16 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { searchManga, getMangaDetails, getMangaChapters, getChapterPages } from './api/_lib/mangadex-client.js';
+import { searchManga, getMangaDetails, getMangaChapters, getChapterPages } from './_lib/mangadex-client.js';
 
 // Importar clientes de otras fuentes
-import { getTuMangaDetails, getTuMangaChapters, getTuMangaPages, formatTuMangaResult } from './api/_lib/tumanga-client.js';
-import { getVisorMangaDetails, getVisorMangaChapters, getVisorMangaPages, formatVisorMangaResult } from './api/_lib/visormanga-client.js';
-import { getMangaLectorDetails, getMangaLectorChapters, getMangaLectorPages, formatMangaLectorResult } from './api/_lib/mangalector-client.js';
-import { getAniListDetails } from './api/_lib/anilist-client.js';
-import { getJikanDetails } from './api/_lib/jikan-client.js';
-import { getTitleDetail as getMangaPlusDetails, formatMangaPlusTitle } from './api/_lib/mangaplus-client.js';
-import { getWebtoonDetails, getWebtoonChapters, getEpisodePages, formatWebtoonResult } from './api/_lib/webtoons-client.js';
+import { getTuMangaDetails, getTuMangaChapters, getTuMangaPages, formatTuMangaResult } from './_lib/tumanga-client.js';
+import { getVisorMangaDetails, getVisorMangaChapters, getVisorMangaPages, formatVisorMangaResult } from './_lib/visormanga-client.js';
+import { getMangaLectorDetails, getMangaLectorChapters, getMangaLectorPages, formatMangaLectorResult } from './_lib/mangalector-client.js';
+import { getAniListDetails } from './_lib/anilist-client.js';
+import { getJikanDetails } from './_lib/jikan-client.js';
+import { getTitleDetail as getMangaPlusDetails, formatMangaPlusTitle } from './_lib/mangaplus-client.js';
+import { getWebtoonDetails, getWebtoonChapters, getEpisodePages, formatWebtoonResult } from './_lib/webtoons-client.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

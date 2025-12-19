@@ -6,3 +6,5 @@ node_modules/
 .DS_Store
 .vscode/
 server.js
+test-*.js
+test-*.mjs

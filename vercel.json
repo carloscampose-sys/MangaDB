@@ -4,7 +4,8 @@
     "outputDirectory": null,
     "functions": {
         "api/[...path].js": {
-            "maxDuration": 30
+            "maxDuration": 30,
+            "includeFiles": "_lib/**"
         }
     },
     "rewrites": [
