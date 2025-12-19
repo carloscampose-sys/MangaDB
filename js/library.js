@@ -68,6 +68,7 @@ function generateSearchKey(query, type, source, genre) {
 let currentType = 'all';
 let currentSource = 'all';
 let currentGenre = 'all';
+let currentSort = 'relevance';
 let searchTimeout = null;
 
 // ============ PAGINACIÓN / SCROLL INFINITO ============
@@ -88,6 +89,7 @@ const noResults = document.getElementById('noResults');
 const typeButtons = document.querySelectorAll('.type-btn');
 const sourceButtons = document.querySelectorAll('.source-btn');
 const genreFilter = document.getElementById('genreFilter');
+const sortFilter = document.getElementById('sortFilter');
 
 // Event Listeners - Búsqueda
 searchInput.addEventListener('input', (e) => {
@@ -143,6 +145,22 @@ genreFilter.addEventListener('change', (e) => {
     }
 });
 
+// Event Listeners - Ordenamiento
+if (sortFilter) {
+    sortFilter.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+
+        // Si ya hay resultados, reordenar sin nueva búsqueda
+        if (allResults.length > 0) {
+            const query = searchInput.value.trim();
+            sortResults();
+            currentPage = 1;
+            hasMoreResults = allResults.length > RESULTS_PER_PAGE;
+            displayResults(allResults.slice(0, RESULTS_PER_PAGE), query, false);
+        }
+    });
+}
+
 // Buscar mangas
 async function searchMangas(query) {
     showLoading();
@@ -176,6 +194,14 @@ async function searchMangas(query) {
 
         const data = await response.json();
 
+        // Actualizar indicadores de estado por fuente
+        if (data.sourceStatus) {
+            Object.entries(data.sourceStatus).forEach(([src, info]) => {
+                const status = info.success ? 'success' : 'error';
+                updateSourceStatus(src, status, info.count);
+            });
+        }
+
         if (data.success && data.results.length > 0) {
             // Guardar en caché
             setCache('search', cacheKey, data.results);
@@ -187,6 +213,34 @@ async function searchMangas(query) {
         console.error('Error buscando mangas:', error);
         lastSearchQuery = query;
         showError(error);
+    }
+}
+
+// Ordenar resultados según el criterio seleccionado
+function sortResults() {
+    switch (currentSort) {
+        case 'title-asc':
+            allResults.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+            break;
+        case 'title-desc':
+            allResults.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+            break;
+        case 'score-desc':
+            allResults.sort((a, b) => (b.score || 0) - (a.score || 0));
+            break;
+        case 'score-asc':
+            allResults.sort((a, b) => (a.score || 0) - (b.score || 0));
+            break;
+        case 'year-desc':
+            allResults.sort((a, b) => (b.year || 0) - (a.year || 0));
+            break;
+        case 'year-asc':
+            allResults.sort((a, b) => (a.year || 0) - (b.year || 0));
+            break;
+        case 'relevance':
+        default:
+            // Mantener orden original (por relevancia de la API)
+            break;
     }
 }
 
@@ -205,11 +259,15 @@ function processResults(results, query) {
     if (filteredResults.length > 0) {
         // Guardar todos los resultados para paginación
         allResults = filteredResults;
+
+        // Aplicar ordenamiento
+        sortResults();
+
         currentPage = 1;
-        hasMoreResults = filteredResults.length > RESULTS_PER_PAGE;
+        hasMoreResults = allResults.length > RESULTS_PER_PAGE;
 
         // Mostrar primera página
-        displayResults(filteredResults.slice(0, RESULTS_PER_PAGE), query, false);
+        displayResults(allResults.slice(0, RESULTS_PER_PAGE), query, false);
     } else {
         showNoResults();
     }
@@ -250,10 +308,28 @@ function displayResults(mangas, query, append = false) {
 
     cards.forEach(card => {
         card.dataset.bound = 'true';
+
+        // Click para ir a detalles
         card.addEventListener('click', () => {
             const mangaId = card.dataset.id;
             const source = card.dataset.source || 'mangadex';
             window.location.href = `/manga-detail.html?id=${mangaId}&source=${source}`;
+        });
+
+        // Hover para prefetch (con delay para evitar muchas peticiones)
+        card.addEventListener('mouseenter', () => {
+            const mangaId = card.dataset.id;
+            const source = card.dataset.source || 'mangadex';
+
+            // Delay de 300ms antes de hacer prefetch
+            clearTimeout(prefetchTimeout);
+            prefetchTimeout = setTimeout(() => {
+                prefetchMangaDetails(mangaId, source);
+            }, 300);
+        });
+
+        card.addEventListener('mouseleave', () => {
+            clearTimeout(prefetchTimeout);
         });
     });
 
@@ -339,11 +415,61 @@ function stopScrollObserver() {
     }
 }
 
+// ============ PREFETCH DE DETALLES ============
+const prefetchCache = new Map();
+let prefetchTimeout = null;
+
+// Prefetch datos de manga al hacer hover
+function prefetchMangaDetails(mangaId, source) {
+    const cacheKey = `${source}-${mangaId}`;
+
+    // Si ya está en caché, no hacer nada
+    if (prefetchCache.has(cacheKey)) return;
+
+    // Marcar como "en proceso"
+    prefetchCache.set(cacheKey, 'loading');
+
+    // Construir URL según la fuente
+    let apiUrl;
+    if (source === 'mangaplus') {
+        apiUrl = `/api/mangaplus/${mangaId.replace('mangaplus_', '')}`;
+    } else if (source === 'webtoons') {
+        apiUrl = `/api/webtoons/${mangaId.replace('webtoons-', '')}`;
+    } else if (source === 'tumanga') {
+        apiUrl = `/api/tumanga/${mangaId.replace('tumanga-', '')}`;
+    } else if (source === 'anilist') {
+        apiUrl = `/api/anilist/${mangaId.replace('anilist-', '')}`;
+    } else if (source === 'jikan') {
+        apiUrl = `/api/jikan/${mangaId.replace('jikan-', '')}`;
+    } else if (source === 'visormanga') {
+        apiUrl = `/api/visormanga/${mangaId.replace('visormanga-', '')}`;
+    } else if (source === 'mangalector') {
+        apiUrl = `/api/mangalector/${mangaId.replace('mangalector-', '')}`;
+    } else {
+        apiUrl = `/api/manga/${mangaId}`;
+    }
+
+    // Hacer prefetch con baja prioridad
+    fetch(apiUrl, { priority: 'low' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                prefetchCache.set(cacheKey, data);
+                // También guardar en caché de localStorage
+                setCache('manga_details', cacheKey, data);
+            }
+        })
+        .catch(() => {
+            prefetchCache.delete(cacheKey);
+        });
+}
+
 // Crear tarjeta de manga
 function createMangaCard(manga) {
     const typeBadge = getTypeBadge(manga.type);
     const statusBadge = manga.status ? `<span class="badge badge-${manga.status}">${getStatusText(manga.status)}</span>` : '';
     const sourceBadge = getSourceBadge(manga.source);
+    const scoreBadge = manga.score ? `<span class="badge" style="background: var(--bg-tertiary);">⭐ ${manga.score}</span>` : '';
 
     return `
     <div class="manga-card" data-id="${manga.id}" data-source="${manga.source || 'mangadex'}">
@@ -360,6 +486,7 @@ function createMangaCard(manga) {
           ${sourceBadge}
           ${typeBadge}
           ${statusBadge}
+          ${scoreBadge}
         </div>
       </div>
     </div>
@@ -403,11 +530,45 @@ function getStatusText(status) {
     return statusMap[status] || status;
 }
 
-// Mostrar loading
+// Mostrar loading con indicadores de fuentes
 function showLoading() {
     loadingContainer.style.display = 'flex';
     resultsSection.style.display = 'none';
     noResults.style.display = 'none';
+
+    // Mostrar indicadores de fuentes si buscamos en todas
+    const badgesContainer = document.getElementById('sourceStatusBadges');
+
+    if (currentSource === 'all' && badgesContainer) {
+        const sources = ['mangadex', 'mangaplus', 'webtoons', 'tumanga', 'anilist', 'jikan', 'visormanga', 'mangalector'];
+        const sourceNames = {
+            mangadex: 'MangaDex',
+            mangaplus: 'M+',
+            webtoons: 'Webtoons',
+            tumanga: 'TuManga',
+            anilist: 'AniList',
+            jikan: 'MAL',
+            visormanga: 'VisorManga',
+            mangalector: 'MangaLector'
+        };
+
+        badgesContainer.innerHTML = sources.map(src =>
+            `<span class="source-badge loading" data-source="${src}">${sourceNames[src]}</span>`
+        ).join('');
+    }
+}
+
+// Actualizar estado de una fuente específica
+function updateSourceStatus(sourceName, status, count = 0) {
+    const badge = document.querySelector(`.source-badge[data-source="${sourceName}"]`);
+    if (badge) {
+        badge.classList.remove('loading', 'success', 'error');
+        badge.classList.add(status);
+
+        if (status === 'success' && count > 0) {
+            badge.textContent = `${badge.textContent.split(' ')[0]} (${count})`;
+        }
+    }
 }
 
 // Ocultar loading

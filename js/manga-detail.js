@@ -10,6 +10,10 @@ function detectSource(id, urlSource) {
     if (id && id.startsWith('mangaplus_')) return 'mangaplus';
     if (id && id.startsWith('webtoons-')) return 'webtoons';
     if (id && id.startsWith('tumanga-')) return 'tumanga';
+    if (id && id.startsWith('anilist-')) return 'anilist';
+    if (id && id.startsWith('jikan-')) return 'jikan';
+    if (id && id.startsWith('visormanga-')) return 'visormanga';
+    if (id && id.startsWith('mangalector-')) return 'mangalector';
     return 'mangadex';
 }
 const source = detectSource(mangaId, urlParams.get('source'));
@@ -49,6 +53,18 @@ async function loadMangaDetails() {
         } else if (source === 'tumanga') {
             const tumangaSlug = mangaId.replace('tumanga-', '');
             apiUrl = `/api/tumanga/${tumangaSlug}`;
+        } else if (source === 'anilist') {
+            const anilistId = mangaId.replace('anilist-', '');
+            apiUrl = `/api/anilist/${anilistId}`;
+        } else if (source === 'jikan') {
+            const jikanId = mangaId.replace('jikan-', '');
+            apiUrl = `/api/jikan/${jikanId}`;
+        } else if (source === 'visormanga') {
+            const visormangaSlug = mangaId.replace('visormanga-', '');
+            apiUrl = `/api/visormanga/${visormangaSlug}`;
+        } else if (source === 'mangalector') {
+            const mangalectorSlug = mangaId.replace('mangalector-', '');
+            apiUrl = `/api/mangalector/${mangalectorSlug}`;
         } else {
             apiUrl = `/api/manga/${mangaId}`;
         }
@@ -63,9 +79,14 @@ async function loadMangaDetails() {
 
         if (data.success) {
             displayMangaDetails(data.manga);
-            // Si es Manga Plus, Webtoons o TuManga, los capítulos vienen en la misma respuesta
-            if ((source === 'mangaplus' || source === 'webtoons' || source === 'tumanga') && data.chapters) {
+            // Para fuentes que traen capítulos en la misma respuesta
+            const sourcesWithChapters = ['mangaplus', 'webtoons', 'tumanga', 'visormanga', 'mangalector'];
+            if (sourcesWithChapters.includes(source) && data.chapters) {
                 displayChapters(data.chapters);
+            }
+            // Para AniList y Jikan que no tienen capítulos, mostrar mensaje
+            if ((source === 'anilist' || source === 'jikan') && data.note) {
+                showInfoOnlyMessage(data);
             }
         }
     } catch (error) {
@@ -114,10 +135,47 @@ function displayMangaDetails(manga) {
     }));
 }
 
+// Mostrar mensaje para fuentes solo de información (AniList, Jikan)
+function showInfoOnlyMessage(data) {
+    chaptersLoading.style.display = 'none';
+    chaptersList.innerHTML = `
+    <div style="text-align: center; padding: var(--space-8); background: var(--bg-secondary); border-radius: var(--radius-xl);">
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">
+        ${data.note}
+      </p>
+      ${data.externalLinks && data.externalLinks.length > 0 ? `
+        <div style="margin-top: var(--space-4);">
+          <p style="font-weight: 600; margin-bottom: var(--space-2);">Links externos:</p>
+          ${data.externalLinks.slice(0, 5).map(link => `
+            <a href="${link.url}" target="_blank" rel="noopener noreferrer"
+               class="badge" style="margin: var(--space-1); display: inline-block; background: var(--accent-primary);">
+              ${link.site}
+            </a>
+          `).join('')}
+        </div>
+      ` : ''}
+      ${data.recommendations && data.recommendations.length > 0 ? `
+        <div style="margin-top: var(--space-6);">
+          <p style="font-weight: 600; margin-bottom: var(--space-3);">Recomendaciones similares:</p>
+          <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;">
+            ${data.recommendations.slice(0, 4).map(rec => `
+              <a href="/manga-detail.html?id=${rec.id}&source=${source}" style="text-align: center; max-width: 100px;">
+                <img src="${rec.coverUrl}" alt="${rec.title}" style="width: 80px; height: 120px; object-fit: cover; border-radius: var(--radius-lg);">
+                <p style="font-size: var(--text-xs); margin-top: var(--space-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${rec.title}</p>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 // Cargar capítulos
 async function loadChapters() {
-    // Si es Manga Plus, Webtoons o TuManga, los capítulos ya se cargan con los detalles
-    if (source === 'mangaplus' || source === 'webtoons' || source === 'tumanga') {
+    // Fuentes que ya cargan capítulos con los detalles
+    const sourcesWithChapters = ['mangaplus', 'webtoons', 'tumanga', 'anilist', 'jikan', 'visormanga', 'mangalector'];
+    if (sourcesWithChapters.includes(source)) {
         return;
     }
 

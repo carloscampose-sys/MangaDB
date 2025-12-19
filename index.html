@@ -4,238 +4,627 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Biblioteca completa de mangas, manhwas y webtoons en español. Lee tus series favoritas gratis.">
-  <title>Biblioteca de Manga, Manhwa y Webtoons en Español</title>
-  
-  <!-- Google Fonts -->
+  <title>MangaLib - Tu biblioteca de manga</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- CSS -->
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/styles.css">
-  
+
   <style>
-    /* Estilos específicos de la página principal */
+    /* ===== HEADER ===== */
     .header {
-      background: var(--bg-secondary);
-      box-shadow: var(--shadow-md);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: var(--z-sticky);
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
     }
-    
-    .header-content {
+
+    .header-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--space-4) 0;
+      height: var(--header-height);
     }
-    
+
     .logo {
-      font-size: var(--text-2xl);
-      font-weight: 800;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .theme-toggle {
-      background: var(--bg-tertiary);
-      border: none;
-      padding: var(--space-2);
-      border-radius: var(--radius-lg);
-      cursor: pointer;
-      font-size: var(--text-xl);
-      transition: all var(--transition-fast);
-    }
-    
-    .theme-toggle:hover {
-      background: var(--accent-primary);
-      transform: scale(1.1);
-    }
-    
-    .hero {
-      text-align: center;
-      padding: var(--space-16) 0 var(--space-12);
-      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
-    }
-    
-    .hero h1 {
-      font-size: var(--text-4xl);
-      margin-bottom: var(--space-4);
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .hero p {
-      font-size: var(--text-lg);
-      color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto var(--space-8);
-    }
-    
-    .search-container {
-      max-width: 800px;
-      margin: 0 auto;
-      position: relative;
-    }
-    
-    .search-input {
-      width: 100%;
-      padding: var(--space-4) var(--space-6);
-      font-size: var(--text-lg);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-lg);
-    }
-    
-    .filters {
       display: flex;
-      gap: var(--space-4);
       align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: var(--space-8);
+      gap: var(--space-3);
+      font-size: var(--text-xl);
+      font-weight: 800;
+      color: var(--text-primary);
+      text-decoration: none;
+      letter-spacing: -0.02em;
     }
-    
-    .filter-btn {
-      padding: var(--space-2) var(--space-4);
-      background: var(--bg-secondary);
-      border: 2px solid var(--bg-tertiary);
+
+    .logo-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--brand-gradient);
       border-radius: var(--radius-lg);
+      font-size: var(--text-lg);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .icon-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
       cursor: pointer;
       transition: all var(--transition-fast);
-      font-size: var(--text-sm);
-      font-weight: 600;
     }
-    
-    .filter-btn.active {
-      background: var(--accent-primary);
-      color: white;
-      border-color: var(--accent-primary);
-    }
-    
-    .filter-btn:hover:not(.active) {
+
+    .icon-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
       border-color: var(--accent-primary);
     }
 
-    .filters-container {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--error);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding: var(--space-16) 0 var(--space-12);
+      text-align: center;
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, var(--accent-muted) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: var(--text-5xl);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-4);
+      background: var(--brand-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
       margin-bottom: var(--space-8);
-      padding: var(--space-4);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ===== SEARCH ===== */
+    .search-wrapper {
+      position: relative;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: var(--space-4) var(--space-6);
+      padding-left: 52px;
+      font-size: var(--text-lg);
       background: var(--bg-secondary);
-      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-lg);
+      transition: all var(--transition-fast);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: var(--space-5);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      pointer-events: none;
+    }
+
+    .search-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      padding: var(--space-8) 0 var(--space-16);
+    }
+
+    /* ===== SECTIONS ===== */
+    .section {
+      margin-bottom: var(--space-12);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+    }
+
+    .section-title {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    /* ===== FILTERS ===== */
+    .filters-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-5);
+      margin-bottom: var(--space-8);
+    }
+
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .filters-row + .filters-row {
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .filter-label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 60px;
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .filter-chip {
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+      border: 1px solid transparent;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-chip:hover {
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .filter-chip.active {
+      color: var(--accent-primary);
+      background: var(--accent-muted);
+      border-color: var(--accent-primary);
     }
 
     .filter-select {
       padding: var(--space-2) var(--space-4);
-      background: var(--bg-tertiary);
-      border: 2px solid var(--bg-tertiary);
-      border-radius: var(--radius-lg);
-      color: var(--text-primary);
+      padding-right: var(--space-8);
       font-size: var(--text-sm);
-      font-weight: 600;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+      border: 1px solid transparent;
+      border-radius: var(--radius-lg);
       cursor: pointer;
       transition: all var(--transition-fast);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
     }
 
-    .filter-select:hover {
-      border-color: var(--accent-primary);
-    }
-
+    .filter-select:hover,
     .filter-select:focus {
-      outline: none;
       border-color: var(--accent-primary);
+      outline: none;
     }
 
-    .source-btn[data-source="mangadex"].active {
-      background: #ff6740;
-      border-color: #ff6740;
-    }
-
-    .source-btn[data-source="mangaplus"].active {
-      background: #dc0000;
-      border-color: #dc0000;
-    }
-
-    .source-btn[data-source="webtoons"].active {
-      background: #00d564;
-      border-color: #00d564;
-    }
-    
+    /* ===== MANGA CARDS ===== */
     .manga-card {
       position: relative;
       cursor: pointer;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      transition: all var(--transition-base);
     }
-    
+
+    .manga-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent-primary);
+    }
+
     .manga-cover {
       width: 100%;
       aspect-ratio: 2/3;
       object-fit: cover;
-      border-radius: var(--radius-lg);
       background: var(--bg-tertiary);
     }
-    
+
     .manga-info {
-      padding: var(--space-3) 0;
+      padding: var(--space-3);
     }
-    
+
     .manga-title {
-      font-size: var(--text-base);
+      font-size: var(--text-sm);
       font-weight: 600;
+      color: var(--text-primary);
       margin-bottom: var(--space-2);
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      line-height: 1.4;
     }
-    
+
     .manga-badges {
       display: flex;
-      gap: var(--space-2);
       flex-wrap: wrap;
+      gap: var(--space-1);
     }
-    
-    .results-header {
+
+    .manga-card .remove-btn {
+      position: absolute;
+      top: var(--space-2);
+      right: var(--space-2);
+      width: 28px;
+      height: 28px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      border: none;
+      border-radius: var(--radius-full);
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all var(--transition-fast);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: var(--space-6);
+      justify-content: center;
     }
-    
+
+    .manga-card:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .manga-card .remove-btn:hover {
+      background: var(--error);
+    }
+
+    /* ===== CONTINUE READING CARD ===== */
+    .continue-card .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .continue-card .progress-fill {
+      height: 100%;
+      background: var(--accent-primary);
+      transition: width var(--transition-base);
+    }
+
+    .continue-card .progress-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--space-2) var(--space-3);
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      color: white;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* ===== LOADING ===== */
     .loading-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 400px;
+      padding: var(--space-16) 0;
       gap: var(--space-4);
     }
-    
+
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+    }
+
+    /* ===== SOURCE STATUS ===== */
+    .source-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      justify-content: center;
+      margin-top: var(--space-4);
+    }
+
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+
+    .source-badge.loading::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border: 2px solid var(--text-tertiary);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .source-badge.success {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .source-badge.success::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+
+    .source-badge.error {
+      background: var(--error-bg);
+      color: var(--error);
+    }
+
+    .source-badge.error::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--error);
+      border-radius: 50%;
+    }
+
+    /* ===== NO RESULTS ===== */
     .no-results {
       text-align: center;
-      padding: var(--space-16);
-      color: var(--text-secondary);
+      padding: var(--space-16) var(--space-4);
     }
-    
-    .no-results svg {
-      width: 120px;
-      height: 120px;
-      margin-bottom: var(--space-6);
+
+    .no-results-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-6);
+      color: var(--text-tertiary);
       opacity: 0.5;
     }
-    
+
+    .no-results h3 {
+      margin-bottom: var(--space-2);
+    }
+
+    .no-results p {
+      margin-bottom: var(--space-6);
+    }
+
+    /* ===== NOTIFICATION PANEL ===== */
+    .notification-dropdown {
+      position: relative;
+    }
+
+    .notification-panel {
+      position: absolute;
+      top: calc(100% + var(--space-2));
+      right: 0;
+      width: 360px;
+      max-height: 480px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      overflow: hidden;
+      z-index: var(--z-dropdown);
+      display: none;
+    }
+
+    .notification-panel.show {
+      display: block;
+      animation: scaleIn var(--duration-200) var(--ease-out);
+    }
+
+    .notification-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .notification-header h4 {
+      font-size: var(--text-sm);
+      margin: 0;
+    }
+
+    .notification-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .notification-item {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .notification-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .notification-item.read {
+      opacity: 0.6;
+    }
+
+    .notification-item img {
+      width: 40px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .notification-content p {
+      margin: 0;
+      font-size: var(--text-sm);
+    }
+
+    .notification-content .title {
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .notification-content .chapter {
+      color: var(--text-secondary);
+      font-size: var(--text-xs);
+    }
+
+    .notification-content .time {
+      color: var(--text-tertiary);
+      font-size: 10px;
+    }
+
+    .notification-empty {
+      padding: var(--space-8);
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
+      .hero {
+        padding: var(--space-10) 0 var(--space-8);
+      }
+
       .hero h1 {
         font-size: var(--text-3xl);
       }
-      
-      .search-input {
+
+      .hero p {
         font-size: var(--text-base);
+      }
+
+      .filters-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filter-chips {
+        width: 100%;
+      }
+
+      .notification-panel {
+        width: calc(100vw - var(--space-8));
+        right: calc(-1 * var(--space-4));
       }
     }
   </style>
@@ -244,152 +633,217 @@
   <!-- Header -->
   <header class="header">
     <div class="container">
-      <div class="header-content">
-        <div class="logo">📚 MangaLib</div>
-        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
-          🌙
-        </button>
+      <div class="header-inner">
+        <a href="/" class="logo">
+          <span class="logo-icon">M</span>
+          <span class="hide-mobile">MangaLib</span>
+        </a>
+
+        <div class="header-actions">
+          <!-- Notifications -->
+          <div class="notification-dropdown">
+            <button class="icon-btn" id="notificationBtn" onclick="toggleNotificationPanel()" aria-label="Notificaciones">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <span class="notification-badge" id="notificationBadge">0</span>
+            </button>
+            <div class="notification-panel" id="notificationPanel">
+              <div class="notification-header">
+                <h4>Notificaciones</h4>
+                <button class="btn btn-ghost btn-sm" onclick="Notifications.markAllAsRead()">Marcar leidas</button>
+              </div>
+              <div class="notification-list" id="notificationList"></div>
+            </div>
+          </div>
+
+          <!-- Theme Toggle -->
+          <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema">
+            <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Hero -->
   <section class="hero">
     <div class="container">
-      <h1>Descubre tu próxima lectura</h1>
-      <p>Miles de mangas, manhwas y webtoons en español. Gratis y actualizado.</p>
-      
-      <div class="search-container">
-        <input 
-          type="text" 
-          class="input search-input" 
-          id="searchInput"
-          placeholder="Buscar manga, manhwa o webtoon..."
-          autocomplete="off"
-        >
+      <div class="hero-content">
+        <h1>Tu biblioteca de manga</h1>
+        <p>Miles de mangas, manhwas y webtoons en un solo lugar. Descubre tu proxima lectura favorita.</p>
+
+        <div class="search-wrapper">
+          <span class="search-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </span>
+          <input
+            type="text"
+            class="input search-input"
+            id="searchInput"
+            placeholder="Buscar manga, manhwa o webtoon..."
+            autocomplete="off"
+          >
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Main Content -->
-  <main class="container" style="padding-bottom: var(--space-16);">
-    <!-- Sección Continuar Leyendo -->
-    <section id="continueReadingSection" class="continue-reading-section" style="display: none; margin-bottom: var(--space-8);">
-      <div class="results-header">
-        <h2>Continuar leyendo</h2>
-        <button class="filter-btn" onclick="clearReadingHistory()" style="font-size: var(--text-xs);">Limpiar historial</button>
-      </div>
-      <div class="grid grid-cols-5" id="continueReadingGrid">
-        <!-- Mangas en progreso se cargarán aquí -->
-      </div>
-    </section>
+  <main class="main-content">
+    <div class="container">
 
-    <!-- Sección Favoritos -->
-    <section id="favoritesSection" style="display: none; margin-bottom: var(--space-8);">
-      <div class="results-header">
-        <h2>Mis favoritos</h2>
-        <div style="display: flex; gap: var(--space-2); align-items: center;">
-          <select class="filter-select" id="favoritesFilter" onchange="loadFavorites()" style="font-size: var(--text-xs);">
+      <!-- Continue Reading -->
+      <section class="section" id="continueReadingSection" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">Continuar leyendo</h2>
+          <button class="btn btn-ghost btn-sm" onclick="clearReadingHistory()">Limpiar</button>
+        </div>
+        <div class="grid grid-cols-6" id="continueReadingGrid"></div>
+      </section>
+
+      <!-- Favorites -->
+      <section class="section" id="favoritesSection" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title">Mis favoritos</h2>
+          <div class="section-actions">
+            <select class="filter-select" id="favoritesFilter" onchange="loadFavorites()">
+              <option value="all">Todos</option>
+              <option value="reading">Leyendo</option>
+              <option value="plan-to-read">Por leer</option>
+              <option value="completed">Completados</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="exportFavorites()">Exportar</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-6" id="favoritesGrid"></div>
+      </section>
+
+      <!-- Filters -->
+      <div class="filters-panel">
+        <!-- Source Filter -->
+        <div class="filters-row">
+          <span class="filter-label">Fuente</span>
+          <div class="filter-chips">
+            <button class="filter-chip source-btn active" data-source="all">Todas</button>
+            <button class="filter-chip source-btn" data-source="mangadex">MangaDex</button>
+            <button class="filter-chip source-btn" data-source="mangaplus">Manga+</button>
+            <button class="filter-chip source-btn" data-source="webtoons">Webtoons</button>
+            <button class="filter-chip source-btn" data-source="tumanga">TuManga</button>
+            <button class="filter-chip source-btn" data-source="visormanga">VisorManga</button>
+            <button class="filter-chip source-btn" data-source="mangalector">MangaLector</button>
+            <button class="filter-chip source-btn" data-source="anilist">AniList</button>
+            <button class="filter-chip source-btn" data-source="jikan">MAL</button>
+          </div>
+        </div>
+
+        <!-- Type Filter -->
+        <div class="filters-row">
+          <span class="filter-label">Tipo</span>
+          <div class="filter-chips">
+            <button class="filter-chip type-btn active" data-type="all">Todos</button>
+            <button class="filter-chip type-btn" data-type="manga">Manga</button>
+            <button class="filter-chip type-btn" data-type="manhwa">Manhwa</button>
+            <button class="filter-chip type-btn" data-type="manhua">Manhua</button>
+          </div>
+
+          <span class="filter-label" style="margin-left: auto;">Genero</span>
+          <select class="filter-select" id="genreFilter">
             <option value="all">Todos</option>
-            <option value="reading">Leyendo</option>
-            <option value="plan-to-read">Por leer</option>
-            <option value="completed">Completados</option>
+            <option value="action">Accion</option>
+            <option value="adventure">Aventura</option>
+            <option value="comedy">Comedia</option>
+            <option value="drama">Drama</option>
+            <option value="fantasy">Fantasia</option>
+            <option value="horror">Horror</option>
+            <option value="mystery">Misterio</option>
+            <option value="romance">Romance</option>
+            <option value="sci-fi">Ciencia Ficcion</option>
+            <option value="slice of life">Slice of Life</option>
+            <option value="supernatural">Sobrenatural</option>
           </select>
-          <button class="filter-btn" onclick="exportFavorites()" style="font-size: var(--text-xs);">Exportar</button>
+
+          <span class="filter-label">Ordenar</span>
+          <select class="filter-select" id="sortFilter">
+            <option value="relevance">Relevancia</option>
+            <option value="title-asc">Titulo A-Z</option>
+            <option value="title-desc">Titulo Z-A</option>
+            <option value="score-desc">Mayor puntuacion</option>
+            <option value="year-desc">Mas reciente</option>
+          </select>
         </div>
       </div>
-      <div class="grid grid-cols-5" id="favoritesGrid">
-        <!-- Favoritos se cargarán aquí -->
-      </div>
-    </section>
 
-    <!-- Filtros -->
-    <div class="filters-container">
-      <!-- Filtro por Fuente -->
-      <div class="filters" style="flex-wrap: wrap;">
-        <span style="font-weight: 600; color: var(--text-secondary);">Fuente:</span>
-        <button class="filter-btn source-btn active" data-source="all">Todas</button>
-        <button class="filter-btn source-btn" data-source="mangadex">MangaDex</button>
-        <button class="filter-btn source-btn" data-source="mangaplus">M+</button>
-        <button class="filter-btn source-btn" data-source="webtoons">Webtoons</button>
-        <button class="filter-btn source-btn" data-source="tumanga">TuManga</button>
-        <button class="filter-btn source-btn" data-source="visormanga">VisorManga</button>
-        <button class="filter-btn source-btn" data-source="mangalector">MangaLector</button>
-        <button class="filter-btn source-btn" data-source="anilist">AniList</button>
-        <button class="filter-btn source-btn" data-source="jikan">MAL</button>
+      <!-- Results -->
+      <section class="section" id="resultsSection" style="display: none;">
+        <div class="section-header">
+          <h2 class="section-title" id="resultsTitle">Resultados</h2>
+          <span class="text-secondary text-sm" id="resultsCount"></span>
+        </div>
+        <div class="grid grid-cols-6" id="resultsGrid"></div>
+      </section>
+
+      <!-- Loading -->
+      <div class="loading-container" id="loadingContainer" style="display: none;">
+        <div class="spinner spinner-lg"></div>
+        <p class="loading-text">Buscando en todas las fuentes...</p>
+        <div class="source-status" id="sourceStatusBadges"></div>
       </div>
 
-      <!-- Filtro por Tipo -->
-      <div class="filters">
-        <span style="font-weight: 600; color: var(--text-secondary);">Tipo:</span>
-        <button class="filter-btn type-btn active" data-type="all">Todos</button>
-        <button class="filter-btn type-btn" data-type="manga">🇯🇵 Manga</button>
-        <button class="filter-btn type-btn" data-type="manhwa">🇰🇷 Manhwa</button>
-        <button class="filter-btn type-btn" data-type="manhua">🇨🇳 Manhua</button>
+      <!-- No Results -->
+      <div class="no-results" id="noResults" style="display: none;">
+        <svg class="no-results-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <h3>Sin resultados</h3>
+        <p>No encontramos nada. Intenta con otro termino o cambia los filtros.</p>
       </div>
 
-      <!-- Filtro por Género -->
-      <div class="filters genre-filters">
-        <span style="font-weight: 600; color: var(--text-secondary);">Género:</span>
-        <select class="filter-select" id="genreFilter">
-          <option value="all">Todos los géneros</option>
-          <option value="action">Acción</option>
-          <option value="adventure">Aventura</option>
-          <option value="comedy">Comedia</option>
-          <option value="drama">Drama</option>
-          <option value="fantasy">Fantasía</option>
-          <option value="horror">Horror</option>
-          <option value="mystery">Misterio</option>
-          <option value="romance">Romance</option>
-          <option value="sci-fi">Ciencia Ficción</option>
-          <option value="slice of life">Slice of Life</option>
-          <option value="sports">Deportes</option>
-          <option value="supernatural">Sobrenatural</option>
-          <option value="thriller">Thriller</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Resultados -->
-    <div id="resultsSection" style="display: none;">
-      <div class="results-header">
-        <h2 id="resultsTitle">Resultados</h2>
-        <span id="resultsCount" style="color: var(--text-secondary);"></span>
-      </div>
-      
-      <div class="grid grid-cols-5" id="resultsGrid">
-        <!-- Mangas se cargarán aquí -->
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div class="loading-container" id="loadingContainer">
-      <div class="spinner"></div>
-      <p style="color: var(--text-secondary);">Buscando...</p>
-    </div>
-
-    <!-- No results -->
-    <div class="no-results" id="noResults" style="display: none;">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      <h3>No se encontraron resultados</h3>
-      <p>Intenta con otro término de búsqueda</p>
     </div>
   </main>
 
-  <!-- JavaScript -->
+  <!-- Scripts -->
   <script src="/js/reading-history.js"></script>
   <script src="/js/favorites.js"></script>
+  <script src="/js/notifications.js"></script>
   <script type="module" src="/js/theme.js"></script>
   <script type="module" src="/js/library.js"></script>
+
   <script>
-    // Cargar secciones al iniciar
+    // Initialize on load
     document.addEventListener('DOMContentLoaded', function() {
       loadContinueReading();
       loadFavorites();
+      initThemeToggle();
     });
 
+    // Theme toggle
+    function initThemeToggle() {
+      const toggle = document.getElementById('themeToggle');
+      const sunIcon = toggle.querySelector('.sun-icon');
+      const moonIcon = toggle.querySelector('.moon-icon');
+
+      function updateIcons() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        sunIcon.style.display = isDark ? 'block' : 'none';
+        moonIcon.style.display = isDark ? 'none' : 'block';
+      }
+
+      updateIcons();
+
+      // Observer for theme changes
+      const observer = new MutationObserver(updateIcons);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+
+    // Continue Reading
     function loadContinueReading() {
       const continueReading = ReadingHistory.getContinue(10);
       const section = document.getElementById('continueReadingSection');
@@ -401,25 +855,16 @@
       }
 
       grid.innerHTML = continueReading.map(item => `
-        <div class="manga-card" onclick="goToManga('${item.mangaId}', '${item.source}')" style="cursor: pointer;">
-          <div style="position: relative;">
-            <img
-              src="${item.coverUrl}"
-              alt="${item.title}"
-              class="manga-cover"
-              loading="lazy"
-              onerror="this.src='/images/no-cover.jpg'"
-            >
-            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: var(--space-2); border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
-              <div style="background: var(--bg-tertiary); border-radius: var(--radius-sm); height: 4px; overflow: hidden;">
-                <div style="background: var(--accent-primary); height: 100%; width: ${item.progress}%;"></div>
-              </div>
-              <small style="color: white; font-size: 10px;">Cap. ${item.lastChapterNum} - ${item.progress}%</small>
-            </div>
+        <div class="manga-card continue-card" onclick="goToManga('${item.mangaId}', '${item.source}')">
+          <img src="${item.coverUrl}" alt="${item.title}" class="manga-cover" loading="lazy" onerror="this.src='/images/no-cover.jpg'">
+          <div class="progress-info">
+            Cap. ${item.lastChapterNum} - ${item.progress}%
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${item.progress}%"></div>
           </div>
           <div class="manga-info">
             <h3 class="manga-title">${item.title}</h3>
-            <small style="color: var(--text-secondary);">${ReadingHistory.formatTimeAgo(item.lastReadAt)}</small>
           </div>
         </div>
       `).join('');
@@ -432,13 +877,13 @@
     }
 
     function clearReadingHistory() {
-      if (confirm('¿Estás seguro de que quieres limpiar tu historial de lectura?')) {
+      if (confirm('Limpiar historial de lectura?')) {
         ReadingHistory.clear();
         document.getElementById('continueReadingSection').style.display = 'none';
       }
     }
 
-    // ============ FAVORITOS ============
+    // Favorites
     function loadFavorites() {
       const filter = document.getElementById('favoritesFilter')?.value || 'all';
       const favorites = Favorites.getFiltered({
@@ -454,19 +899,14 @@
         return;
       }
 
-      grid.innerHTML = favorites.slice(0, 10).map(fav => `
-        <div class="manga-card" onclick="goToManga('${fav.id}', '${fav.source}')" style="cursor: pointer; position: relative;">
-          <button onclick="event.stopPropagation(); removeFavorite('${fav.id}', '${fav.source}')"
-                  style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; z-index: 10; font-size: 14px;">
-            ❌
+      grid.innerHTML = favorites.slice(0, 12).map(fav => `
+        <div class="manga-card" onclick="goToManga('${fav.id}', '${fav.source}')">
+          <button class="remove-btn" onclick="event.stopPropagation(); removeFavorite('${fav.id}', '${fav.source}')">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
           </button>
-          <img
-            src="${fav.coverUrl}"
-            alt="${fav.title}"
-            class="manga-cover"
-            loading="lazy"
-            onerror="this.src='/images/no-cover.jpg'"
-          >
+          <img src="${fav.coverUrl}" alt="${fav.title}" class="manga-cover" loading="lazy" onerror="this.src='/images/no-cover.jpg'">
           <div class="manga-info">
             <h3 class="manga-title">${fav.title}</h3>
             <div class="manga-badges">
@@ -485,17 +925,27 @@
     }
 
     function getSourceBadgeHTML(source) {
-      const badges = {
-        'mangadex': '<span class="badge" style="background: #ff6740;">MangaDex</span>',
-        'mangaplus': '<span class="badge" style="background: #dc0000;">M+</span>',
-        'webtoons': '<span class="badge" style="background: #00d564;">Webtoons</span>',
-        'tumanga': '<span class="badge" style="background: #ff6b35;">TuManga</span>',
-        'anilist': '<span class="badge" style="background: #02a9ff;">AniList</span>',
-        'jikan': '<span class="badge" style="background: #2e51a2;">MAL</span>',
-        'visormanga': '<span class="badge" style="background: #9333ea;">VisorManga</span>',
-        'mangalector': '<span class="badge" style="background: #f59e0b;">MangaLector</span>'
+      const colors = {
+        'mangadex': '#ff6740',
+        'mangaplus': '#dc0000',
+        'webtoons': '#00d564',
+        'tumanga': '#ff6b35',
+        'anilist': '#02a9ff',
+        'jikan': '#2e51a2',
+        'visormanga': '#9333ea',
+        'mangalector': '#f59e0b'
       };
-      return badges[source] || '';
+      const names = {
+        'mangadex': 'MangaDex',
+        'mangaplus': 'M+',
+        'webtoons': 'Webtoons',
+        'tumanga': 'TuManga',
+        'anilist': 'AniList',
+        'jikan': 'MAL',
+        'visormanga': 'VisorManga',
+        'mangalector': 'MangaLector'
+      };
+      return `<span class="badge" style="background: ${colors[source]}20; color: ${colors[source]};">${names[source] || source}</span>`;
     }
 
     function exportFavorites() {
@@ -509,10 +959,26 @@
       URL.revokeObjectURL(url);
     }
 
-    // Escuchar actualizaciones de favoritos
-    window.addEventListener('favorites-updated', () => {
-      loadFavorites();
+    // Notifications
+    function toggleNotificationPanel() {
+      const panel = document.getElementById('notificationPanel');
+      panel.classList.toggle('show');
+
+      if (panel.classList.contains('show')) {
+        document.getElementById('notificationList').innerHTML = Notifications.renderPanel();
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const dropdown = document.querySelector('.notification-dropdown');
+      const panel = document.getElementById('notificationPanel');
+      if (dropdown && !dropdown.contains(e.target)) {
+        panel.classList.remove('show');
+      }
     });
+
+    window.addEventListener('favorites-updated', loadFavorites);
+    window.addEventListener('notifications-updated', () => Notifications.updateBadge());
   </script>
 </body>
 </html>
