@@ -34,7 +34,7 @@ const chaptersList = document.getElementById('chaptersList');
 // Cargar datos al iniciar
 if (mangaId) {
     loadMangaDetails();
-    loadChapters();
+    // Los capítulos se cargan dentro de loadMangaDetails si es necesario
 } else {
     // Si no hay ID, redirigir a home
     window.location.href = '/';
@@ -43,16 +43,8 @@ if (mangaId) {
 // Cargar detalles del manga
 async function loadMangaDetails() {
     try {
-        let apiUrl;
-        // Fuentes que usan API unificada
-        const unifiedSources = ['mangaplus', 'webtoons', 'tumanga', 'anilist', 'jikan', 'visormanga', 'mangalector'];
-
-        if (unifiedSources.includes(source)) {
-            apiUrl = `/api/source/${source}/${mangaId}`;
-        } else {
-            // MangaDex usa su propia API
-            apiUrl = `/api/manga/${mangaId}`;
-        }
+        // Usar API unificada /api/details para todas las fuentes
+        const apiUrl = `/api/details?id=${encodeURIComponent(mangaId)}&source=${source}`;
 
         const response = await fetch(apiUrl);
 
@@ -64,14 +56,17 @@ async function loadMangaDetails() {
 
         if (data.success) {
             displayMangaDetails(data.manga);
-            // Para fuentes que traen capítulos en la misma respuesta
-            const sourcesWithChapters = ['mangaplus', 'webtoons', 'tumanga', 'visormanga', 'mangalector'];
-            if (sourcesWithChapters.includes(source) && data.chapters) {
+            // Todos los detalles ahora traen capítulos en la misma respuesta
+            if (data.chapters && data.chapters.length > 0) {
                 displayChapters(data.chapters);
-            }
-            // Para AniList y Jikan que no tienen capítulos, mostrar mensaje
-            if ((source === 'anilist' || source === 'jikan') && data.note) {
+            } else if ((source === 'anilist' || source === 'jikan') && data.note) {
+                // Para AniList y Jikan que no tienen capítulos, mostrar mensaje
                 showInfoOnlyMessage(data);
+            } else if (source === 'mangadex') {
+                // MangaDex: cargar capítulos por separado si no vinieron
+                loadChapters();
+            } else {
+                showNoChapters();
             }
         }
     } catch (error) {
