@@ -29,14 +29,44 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { path } = req.query;
+        // Debug info
+        const debugInfo = {
+            url: req.url,
+            queryPath: req.query.path,
+            query: req.query
+        };
 
-        if (!path || path.length === 0) {
-            return res.status(400).json({ error: 'Invalid API route' });
+        // Obtener path de múltiples fuentes
+        let pathSegments = req.query.path;
+
+        // Si path no viene en query, extraerlo de la URL
+        if (!pathSegments || (Array.isArray(pathSegments) && pathSegments.length === 0)) {
+            const url = req.url || '';
+            // Manejar tanto /api/search como /api/search?q=...
+            let apiPath = url.replace(/^\/api\//, '').split('?')[0];
+            pathSegments = apiPath.split('/').filter(Boolean);
         }
 
-        const route = path[0];
-        console.log('API Route:', route, 'Path:', path);
+        // Asegurar que sea un array
+        if (typeof pathSegments === 'string') {
+            pathSegments = [pathSegments];
+        }
+
+        // Si aún está vacío, intentar con la URL completa
+        if (!pathSegments || pathSegments.length === 0) {
+            const fullUrl = req.url || '';
+            // Para URLs como /?path=search o similar
+            if (fullUrl.includes('search') || req.query.q) {
+                pathSegments = ['search'];
+            }
+        }
+
+        if (!pathSegments || pathSegments.length === 0) {
+            return res.status(400).json({ error: 'Invalid API route', debug: debugInfo });
+        }
+
+        const route = pathSegments[0];
+        console.log('API Route:', route, 'Path:', pathSegments, 'URL:', req.url);
 
         // Router principal
         switch (route) {
@@ -44,16 +74,16 @@ export default async function handler(req, res) {
                 return await handleSearch(req, res);
 
             case 'manga':
-                return await handleManga(req, res, path[1]);
+                return await handleManga(req, res, pathSegments[1]);
 
             case 'chapters':
-                return await handleChapters(req, res, path[1]);
+                return await handleChapters(req, res, pathSegments[1]);
 
             case 'pages':
-                return await handlePages(req, res, path[1]);
+                return await handlePages(req, res, pathSegments[1]);
 
             case 'source':
-                return await handleSource(req, res, path.slice(1));
+                return await handleSource(req, res, pathSegments.slice(1));
 
             default:
                 return res.status(404).json({ error: `Route "${route}" not found` });
