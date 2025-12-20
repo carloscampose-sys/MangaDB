@@ -8,7 +8,6 @@ import { getTuMangaDetails, getTuMangaChapters, formatTuMangaResult } from '../_
 import { getVisorMangaDetails, getVisorMangaChapters, formatVisorMangaResult } from '../_lib/visormanga-client.js';
 import { getMangaLectorDetails, getMangaLectorChapters, formatMangaLectorResult } from '../_lib/mangalector-client.js';
 import { getAniListDetails } from '../_lib/anilist-client.js';
-import { getJikanDetails } from '../_lib/jikan-client.js';
 import { getTitleDetail as getMangaPlusDetails } from '../_lib/mangaplus-client.js';
 import { getWebtoonDetails, getWebtoonChapters, formatWebtoonResult } from '../_lib/webtoons-client.js';
 
@@ -39,8 +38,6 @@ export default async function handler(req, res) {
                 return await handleMangaLector(res, id);
             case 'anilist':
                 return await handleAniList(res, id);
-            case 'jikan':
-                return await handleJikan(res, id);
             case 'mangaplus':
                 return await handleMangaPlus(res, id);
             case 'webtoons':
@@ -59,7 +56,6 @@ function detectSource(id) {
     if (id.startsWith('visormanga-')) return 'visormanga';
     if (id.startsWith('mangalector-')) return 'mangalector';
     if (id.startsWith('anilist-')) return 'anilist';
-    if (id.startsWith('jikan-')) return 'jikan';
     if (id.startsWith('mangaplus_')) return 'mangaplus';
     if (id.startsWith('webtoons-')) return 'webtoons';
     return 'mangadex';
@@ -121,26 +117,6 @@ async function handleAniList(res, id) {
         recommendations: details.recommendations || [],
         externalLinks: details.externalLinks || [],
         note: 'AniList solo provee información. Los capítulos deben buscarse en otras fuentes.'
-    });
-}
-
-async function handleJikan(res, id) {
-    const malId = id.replace('jikan-', '');
-    const details = await getJikanDetails(malId);
-    if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
-    return res.json({
-        success: true,
-        manga: {
-            id: details.id, malId: details.malId, title: details.title,
-            titleEnglish: details.titleEnglish, description: details.description,
-            coverUrl: details.coverUrl, author: details.author, status: details.status,
-            year: details.year, type: details.type, genres: details.genres,
-            score: details.score, source: 'jikan', sourceUrl: details.sourceUrl
-        },
-        chapters: [],
-        relations: details.relations || [],
-        externalLinks: details.externalLinks || [],
-        note: 'MyAnimeList solo provee información. Los capítulos deben buscarse en otras fuentes.'
     });
 }
 

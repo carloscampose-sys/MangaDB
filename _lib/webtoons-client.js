@@ -58,12 +58,15 @@ export async function searchWebtoons(query, limit = 20) {
         const slug = categoryMatch ? categoryMatch[2] : '';
 
         if (title && titleNo) {
+          // Usar proxy para las imágenes de Webtoons (bloquean peticiones sin Referer)
+          const coverUrl = img ? `/api/proxy-image?url=${encodeURIComponent(img)}` : '/images/no-cover.jpg';
+
           results.push({
             id: `webtoons-${titleNo}`,
             titleNo,
             title,
             author: cleanAuthorName(author),
-            coverUrl: img || '/images/no-cover.jpg',
+            coverUrl,
             genre: genre || category,
             category,
             slug,
@@ -135,10 +138,13 @@ export async function getWebtoonDetails(titleNo) {
     const authorArea = $detail('.info .author_area, .author_area').first().text().trim();
     const author = authorArea.split('\n')[0].trim(); // Solo primera línea
     const description = $detail('.summary').first().text().trim();
-    const coverUrl = $detail('.detail_body img, .thmb img').first().attr('src');
+    const rawCoverUrl = $detail('.detail_body img, .thmb img').first().attr('src');
     const genre = $detail('.genre').first().text().trim();
     const rating = $detail('.grade_num').first().text().trim();
     const views = $detail('.view_count, ._view').first().text().trim();
+
+    // Usar proxy para las imágenes de Webtoons
+    const coverUrl = rawCoverUrl ? `/api/proxy-image?url=${encodeURIComponent(rawCoverUrl)}` : '/images/no-cover.jpg';
 
     return {
       id: `webtoons-${titleNo}`,
@@ -146,7 +152,7 @@ export async function getWebtoonDetails(titleNo) {
       title: title || 'Sin título',
       author: cleanAuthorName(author),
       description: description || 'Sin descripción disponible',
-      coverUrl: coverUrl || '/images/no-cover.jpg',
+      coverUrl,
       genre,
       rating,
       views,

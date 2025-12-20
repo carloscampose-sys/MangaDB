@@ -11,7 +11,6 @@ function detectSource(id, urlSource) {
     if (id && id.startsWith('webtoons-')) return 'webtoons';
     if (id && id.startsWith('tumanga-')) return 'tumanga';
     if (id && id.startsWith('anilist-')) return 'anilist';
-    if (id && id.startsWith('jikan-')) return 'jikan';
     if (id && id.startsWith('visormanga-')) return 'visormanga';
     if (id && id.startsWith('mangalector-')) return 'mangalector';
     return 'mangadex';
@@ -83,7 +82,7 @@ async function loadMangaDetails() {
             // Todos los detalles ahora traen capítulos en la misma respuesta
             if (data.chapters && data.chapters.length > 0) {
                 displayChapters(data.chapters);
-            } else if ((source === 'anilist' || source === 'jikan') && data.note) {
+            } else if (source === 'anilist' && data.note) {
                 // Para AniList y Jikan que no tienen capítulos, mostrar mensaje
                 showInfoOnlyMessage(data);
             } else if (source === 'mangadex') {
@@ -178,7 +177,7 @@ function showInfoOnlyMessage(data) {
 // Cargar capítulos
 async function loadChapters() {
     // Fuentes que ya cargan capítulos con los detalles
-    const sourcesWithChapters = ['mangaplus', 'webtoons', 'tumanga', 'anilist', 'jikan', 'visormanga', 'mangalector'];
+    const sourcesWithChapters = ['mangaplus', 'webtoons', 'tumanga', 'anilist', 'visormanga', 'mangalector'];
     if (sourcesWithChapters.includes(source)) {
         return;
     }

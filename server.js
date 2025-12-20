@@ -157,6 +157,45 @@ app.get('/api/pages/:chapterId', async (req, res) => {
     }
 });
 
+// Proxy de imágenes para Webtoons (requiere Referer)
+app.get('/api/proxy-image', async (req, res) => {
+    try {
+        const { url } = req.query;
+
+        if (!url) {
+            return res.status(400).json({ error: 'URL es requerida' });
+        }
+
+        // Solo permitir URLs de webtoons
+        if (!url.includes('webtoon-phinf.pstatic.net') && !url.includes('webtoons.com')) {
+            return res.status(403).json({ error: 'URL no permitida' });
+        }
+
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://www.webtoons.com/',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8'
+            }
+        });
+
+        if (!response.ok) {
+            return res.status(response.status).json({ error: 'Error al obtener imagen' });
+        }
+
+        const contentType = response.headers.get('content-type');
+        const buffer = await response.buffer();
+
+        res.setHeader('Content-Type', contentType || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Proxy image error:', error);
+        res.status(500).json({ error: 'Error interno' });
+    }
+});
+
 // ============ API UNIFICADA PARA VERCEL ============
 // Detectar fuente automáticamente
 function detectSource(id) {
@@ -164,7 +203,6 @@ function detectSource(id) {
     if (id.startsWith('visormanga-')) return 'visormanga';
     if (id.startsWith('mangalector-')) return 'mangalector';
     if (id.startsWith('anilist-')) return 'anilist';
-    if (id.startsWith('jikan-')) return 'jikan';
     if (id.startsWith('mangaplus_')) return 'mangaplus';
     if (id.startsWith('webtoons-')) return 'webtoons';
     return 'mangadex';

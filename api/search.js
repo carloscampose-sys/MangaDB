@@ -3,7 +3,6 @@ import { searchMangaPlus, formatMangaPlusTitle } from '../_lib/mangaplus-client.
 import { searchWebtoons, formatWebtoonResult } from '../_lib/webtoons-client.js';
 import { searchTuManga, formatTuMangaResult } from '../_lib/tumanga-client.js';
 import { searchAniList, formatAniListResult } from '../_lib/anilist-client.js';
-import { searchJikan, formatJikanResult } from '../_lib/jikan-client.js';
 import { searchVisorManga, formatVisorMangaResult } from '../_lib/visormanga-client.js';
 import { searchMangaLector, formatMangaLectorResult } from '../_lib/mangalector-client.js';
 
@@ -27,7 +26,6 @@ export default async function handler(req, res) {
             webtoons: { search: () => searchWebtoons(q, limitNum), format: (r) => r.map(formatWebtoonResult) },
             tumanga: { search: () => searchTuManga(q, limitNum), format: (r) => r.map(formatTuMangaResult) },
             anilist: { search: () => searchAniList(q, limitNum), format: (r) => r.map(formatAniListResult) },
-            jikan: { search: () => searchJikan(q, limitNum), format: (r) => r.map(formatJikanResult) },
             visormanga: { search: () => searchVisorManga(q, limitNum), format: (r) => r.map(formatVisorMangaResult) },
             mangalector: { search: () => searchMangaLector(q, limitNum), format: (r) => r.map(formatMangaLectorResult) }
         };
