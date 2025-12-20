@@ -5,6 +5,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const chapterId = urlParams.get('id');
 const mangaId = urlParams.get('manga');
 const chapterNumber = urlParams.get('chapter');
+const source = urlParams.get('source') || 'mangadex';
+const slug = urlParams.get('slug') || '';
 
 // Estado del lector
 let pages = [];
@@ -37,7 +39,15 @@ if (chapterId && mangaId) {
 // Cargar capítulo
 async function loadChapter() {
     try {
-        const response = await fetch(`/api/pages/${chapterId}`);
+        // Construir URL con todos los parámetros necesarios
+        const params = new URLSearchParams({
+            id: chapterId,
+            source: source,
+            chapter: chapterNumber || '',
+            slug: slug
+        });
+
+        const response = await fetch(`/api/reader?${params.toString()}`);
 
         if (!response.ok) {
             throw new Error('Error al cargar capítulo');
@@ -45,7 +55,13 @@ async function loadChapter() {
 
         const data = await response.json();
 
-        if (data.success && data.pages.length > 0) {
+        // Si es MangaPlus, redirigir al visor oficial
+        if (data.redirect && data.viewerUrl) {
+            window.location.href = data.viewerUrl;
+            return;
+        }
+
+        if (data.success && data.pages && data.pages.length > 0) {
             pages = data.pages;
             renderPages();
             updateTitle();

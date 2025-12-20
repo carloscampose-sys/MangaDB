@@ -202,15 +202,15 @@ function displayChapters(chapters) {
                 if (episodeUrl) {
                     window.open(episodeUrl, '_blank');
                 } else {
-                    // Fallback: ir al reader local (si tenemos las imágenes)
                     window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}&source=webtoons`;
                 }
-            } else if (chapterSource === 'tumanga') {
-                // TuManga - leer en nuestro reader local
-                const slug = item.dataset.slug;
-                window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}&source=tumanga&slug=${slug}`;
+            } else if (chapterSource === 'tumanga' || chapterSource === 'visormanga' || chapterSource === 'mangalector') {
+                // Fuentes de scraping - leer en nuestro reader local
+                const slug = item.dataset.slug || '';
+                window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}&source=${chapterSource}&slug=${slug}`;
             } else {
-                window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}`;
+                // MangaDex u otras fuentes
+                window.location.href = `/reader.html?id=${chapterId}&manga=${mangaId}&chapter=${chapterNumber}&source=${chapterSource}`;
             }
         });
     });
