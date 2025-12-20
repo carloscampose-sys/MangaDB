@@ -69,6 +69,9 @@ async function loadChapter() {
 
             // Guardar progreso (para futuras implementaciones)
             saveProgress();
+        } else if (data.isExternal) {
+            // Capítulo alojado externamente (MangaPlus, etc.)
+            showExternalChapterMessage(data.message);
         } else {
             showError('No se encontraron páginas para este capítulo');
         }
@@ -213,6 +216,20 @@ function showError(message) {
     </svg>
     <h3>${message}</h3>
     <a href="/manga-detail.html?id=${mangaId}" class="btn btn-primary" style="margin-top: var(--space-4);">Volver al manga</a>
+  `;
+}
+
+// Mostrar mensaje para capítulos externos
+function showExternalChapterMessage(message) {
+    loadingOverlay.innerHTML = `
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 80px; height: 80px; opacity: 0.5; color: var(--accent-primary);">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+    </svg>
+    <h3 style="color: var(--accent-primary);">Capítulo Externo</h3>
+    <p style="color: var(--text-secondary); margin: var(--space-4) 0; max-width: 400px; text-align: center;">
+      ${message || 'Este capítulo está alojado en un sitio externo. Por favor, lee el capítulo desde la lista de capítulos donde encontrarás el enlace directo.'}
+    </p>
+    <a href="/manga-detail.html?id=${mangaId}&source=${source}" class="btn btn-primary" style="margin-top: var(--space-4);">Volver a la lista de capítulos</a>
   `;
 }
 

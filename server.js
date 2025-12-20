@@ -157,7 +157,220 @@ app.get('/api/pages/:chapterId', async (req, res) => {
     }
 });
 
-// ============ API UNIFICADA DE FUENTES ============
+// ============ API UNIFICADA PARA VERCEL ============
+// Detectar fuente automáticamente
+function detectSource(id) {
+    if (id.startsWith('tumanga-')) return 'tumanga';
+    if (id.startsWith('visormanga-')) return 'visormanga';
+    if (id.startsWith('mangalector-')) return 'mangalector';
+    if (id.startsWith('anilist-')) return 'anilist';
+    if (id.startsWith('jikan-')) return 'jikan';
+    if (id.startsWith('mangaplus_')) return 'mangaplus';
+    if (id.startsWith('webtoons-')) return 'webtoons';
+    return 'mangadex';
+}
+
+// API de detalles unificada (compatible con Vercel)
+app.get('/api/details', async (req, res) => {
+    try {
+        const { id, source: urlSource } = req.query;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID es requerido' });
+        }
+
+        const source = urlSource || detectSource(id);
+        console.log(`Details API: id=${id}, source=${source}`);
+
+        switch (source) {
+            case 'mangadex': {
+                const [details, chaptersData] = await Promise.all([
+                    getMangaDetails(id),
+                    getMangaChapters(id, 0, 100).catch(() => ({ chapters: [], total: 0 }))
+                ]);
+                return res.json({ success: true, manga: details, chapters: chaptersData.chapters, totalChapters: chaptersData.total });
+            }
+
+            case 'tumanga': {
+                const slug = id.replace('tumanga-', '');
+                const [details, chaptersData] = await Promise.all([
+                    getTuMangaDetails(slug).catch(() => null),
+                    getTuMangaChapters(slug).catch(() => ({ chapters: [], total: 0 }))
+                ]);
+                if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
+                return res.json({ success: true, manga: formatTuMangaResult(details), chapters: chaptersData.chapters, totalChapters: chaptersData.total });
+            }
+
+            case 'visormanga': {
+                const slug = id.replace('visormanga-', '');
+                const [details, chaptersData] = await Promise.all([
+                    getVisorMangaDetails(slug).catch(() => null),
+                    getVisorMangaChapters(slug).catch(() => ({ chapters: [], total: 0 }))
+                ]);
+                if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
+                return res.json({ success: true, manga: formatVisorMangaResult(details), chapters: chaptersData.chapters, totalChapters: chaptersData.total });
+            }
+
+            case 'mangalector': {
+                const slug = id.replace('mangalector-', '');
+                const [details, chaptersData] = await Promise.all([
+                    getMangaLectorDetails(slug).catch(() => null),
+                    getMangaLectorChapters(slug).catch(() => ({ chapters: [], total: 0 }))
+                ]);
+                if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
+                return res.json({ success: true, manga: formatMangaLectorResult(details), chapters: chaptersData.chapters, totalChapters: chaptersData.total });
+            }
+
+            case 'anilist': {
+                const anilistId = id.replace('anilist-', '');
+                const details = await getAniListDetails(anilistId);
+                if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
+                return res.json({
+                    success: true,
+                    manga: {
+                        id: details.id, title: details.title, description: details.description,
+                        coverUrl: details.coverUrl, bannerUrl: details.bannerUrl,
+                        author: details.author, artist: details.artist, status: details.status,
+                        year: details.year, type: details.type, genres: details.genres,
+                        tags: details.tags, score: details.score, source: 'anilist', sourceUrl: details.sourceUrl
+                    },
+                    chapters: [],
+                    relations: details.relations || [],
+                    recommendations: details.recommendations || [],
+                    externalLinks: details.externalLinks || [],
+                    note: 'AniList solo provee información. Los capítulos deben buscarse en otras fuentes.'
+                });
+            }
+
+            case 'jikan': {
+                const malId = id.replace('jikan-', '');
+                const details = await getJikanDetails(malId);
+                if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
+                return res.json({
+                    success: true,
+                    manga: {
+                        id: details.id, malId: details.malId, title: details.title,
+                        titleEnglish: details.titleEnglish, description: details.description,
+                        coverUrl: details.coverUrl, author: details.author, status: details.status,
+                        year: details.year, type: details.type, genres: details.genres,
+                        score: details.score, source: 'jikan', sourceUrl: details.sourceUrl
+                    },
+                    chapters: [],
+                    relations: details.relations || [],
+                    externalLinks: details.externalLinks || [],
+                    note: 'MyAnimeList solo provee información. Los capítulos deben buscarse en otras fuentes.'
+                });
+            }
+
+            case 'mangaplus': {
+                const numericId = id.replace('mangaplus_', '');
+                const details = await getMangaPlusDetails(numericId);
+                if (!details) return res.status(404).json({ error: 'Manga no encontrado' });
+                return res.json({
+                    success: true,
+                    manga: {
+                        id: `mangaplus_${numericId}`, title: details.title,
+                        author: details.author || 'Shueisha', description: details.description || '',
+                        coverUrl: details.coverUrl, status: 'ongoing', type: 'manga', source: 'mangaplus'
+                    },
+                    chapters: details.chapters || []
+                });
+            }
+
+            case 'webtoons': {
+                const webtoonId = id.replace('webtoons-', '');
+                const [details, chaptersData] = await Promise.all([
+                    getWebtoonDetails(webtoonId).catch(() => null),
+                    getWebtoonChapters(webtoonId).catch(() => ({ chapters: [], total: 0 }))
+                ]);
+                if (!details) return res.status(404).json({ error: 'Webtoon no encontrado' });
+                return res.json({ success: true, manga: formatWebtoonResult(details), chapters: chaptersData.chapters || [] });
+            }
+
+            default:
+                return res.status(400).json({ error: `Fuente "${source}" no soportada` });
+        }
+    } catch (error) {
+        console.error('Details API Error:', error);
+        res.status(500).json({ error: 'Error interno', message: error.message });
+    }
+});
+
+// API de reader/páginas unificada (compatible con Vercel)
+app.get('/api/reader', async (req, res) => {
+    try {
+        const { id, source: urlSource, chapter, slug, episode } = req.query;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID es requerido' });
+        }
+
+        const source = urlSource || detectSource(id);
+        console.log(`Reader API: id=${id}, source=${source}, chapter=${chapter}, slug=${slug}`);
+
+        switch (source) {
+            case 'mangadex': {
+                const pagesData = await getChapterPages(id);
+                if (pagesData.isExternal || (pagesData.pages && pagesData.pages.length === 0)) {
+                    return res.json({
+                        success: true,
+                        chapterId: id,
+                        pages: [],
+                        total: 0,
+                        source: 'mangadex',
+                        isExternal: true,
+                        message: 'Este capítulo está alojado en un sitio externo. Por favor, lee el capítulo desde la lista de capítulos.'
+                    });
+                }
+                return res.json({ success: true, chapterId: id, pages: pagesData.pages || [], total: pagesData.pages?.length || 0, source: 'mangadex' });
+            }
+
+            case 'tumanga': {
+                const mangaSlug = slug || id.replace('tumanga-', '').replace(/-ch[\d.]+$/, '');
+                const pages = await getTuMangaPages(mangaSlug, chapter);
+                return res.json({ success: true, pages: pages.pages || [], total: pages.total || 0, source: 'tumanga' });
+            }
+
+            case 'visormanga': {
+                const mangaSlug = slug || id.replace('visormanga-', '').replace(/-ch[\d.]+$/, '');
+                const pages = await getVisorMangaPages(mangaSlug, chapter);
+                return res.json({ success: true, pages: pages.pages || [], total: pages.total || 0, source: 'visormanga' });
+            }
+
+            case 'mangalector': {
+                const mangaSlug = slug || id.replace('mangalector-', '').replace(/-ch[\d.]+$/, '');
+                const pages = await getMangaLectorPages(mangaSlug, chapter);
+                return res.json({ success: true, pages: pages.pages || [], total: pages.total || 0, source: 'mangalector' });
+            }
+
+            case 'webtoons': {
+                const webtoonId = id.replace('webtoons-', '').replace(/-ep\d+$/, '');
+                const pages = await getEpisodePages(webtoonId, episode || chapter);
+                return res.json({ success: true, pages: pages.pages || [], total: pages.total || 0, source: 'webtoons' });
+            }
+
+            case 'mangaplus':
+                return res.json({
+                    success: true,
+                    pages: [],
+                    source: 'mangaplus',
+                    redirect: true,
+                    viewerUrl: `https://mangaplus.shueisha.co.jp/viewer/${id.replace('mangaplus_', '')}`,
+                    note: 'Las páginas de MangaPlus están encriptadas. Usa el visor oficial.'
+                });
+
+            default:
+                // Intentar como MangaDex por defecto
+                const pagesData = await getChapterPages(id);
+                return res.json({ success: true, chapterId: id, pages: pagesData.pages || [], total: pagesData.pages?.length || 0, source: 'mangadex' });
+        }
+    } catch (error) {
+        console.error('Reader API Error:', error);
+        res.status(500).json({ error: 'Error al cargar páginas', message: error.message });
+    }
+});
+
+// ============ API LEGACY DE FUENTES (para compatibilidad) ============
 // Ruta para obtener detalles de manga de cualquier fuente
 app.get('/api/source/:source/:id', async (req, res) => {
     try {
@@ -398,6 +611,8 @@ app.listen(PORT, () => {
    GET /api/manga/:id
    GET /api/chapters/:id
    GET /api/pages/:chapterId
+   GET /api/details?id=xxx&source=mangadex|tumanga|etc
+   GET /api/reader?id=xxx&source=xxx&chapter=xxx
 
 Press Ctrl+C to stop
   `);

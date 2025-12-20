@@ -85,6 +85,20 @@ function detectSource(id) {
 
 async function handleMangaDex(res, chapterId) {
     const pagesData = await getChapterPages(chapterId);
+
+    // Si es un capítulo externo (MangaPlus, etc.)
+    if (pagesData.isExternal || (pagesData.pages && pagesData.pages.length === 0)) {
+        return res.json({
+            success: true,
+            chapterId,
+            pages: [],
+            total: 0,
+            source: 'mangadex',
+            isExternal: true,
+            message: 'Este capítulo está alojado en un sitio externo. Por favor, lee el capítulo desde la lista de capítulos.'
+        });
+    }
+
     return res.json({
         success: true,
         chapterId,
