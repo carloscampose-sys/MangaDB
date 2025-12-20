@@ -3,12 +3,13 @@
     "buildCommand": null,
     "outputDirectory": null,
     "functions": {
-        "api/[...path].js": {
+        "api/[[...path]].js": {
             "maxDuration": 30,
             "includeFiles": "_lib/**"
         }
     },
     "rewrites": [
+        { "source": "/api/:path*", "destination": "/api/:path*" },
         { "source": "/manga/:path*", "destination": "/manga-detail.html" },
         { "source": "/reader/:path*", "destination": "/reader.html" }
     ],
