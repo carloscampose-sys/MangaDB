@@ -31,6 +31,30 @@ const mangaAuthor = document.getElementById('mangaAuthor');
 const chaptersLoading = document.getElementById('chaptersLoading');
 const chaptersList = document.getElementById('chaptersList');
 
+// Estado de capítulos
+let allChapters = [];
+let currentSortOrder = 'desc'; // 'desc' = último primero, 'asc' = primero primero
+
+// Función global para ordenar capítulos (llamada desde HTML)
+window.sortChapters = function(order) {
+    if (order === currentSortOrder) return;
+
+    currentSortOrder = order;
+
+    // Actualizar botones activos
+    document.getElementById('sortDesc').classList.toggle('active', order === 'desc');
+    document.getElementById('sortAsc').classList.toggle('active', order === 'asc');
+
+    // Reordenar y mostrar capítulos
+    const sortedChapters = [...allChapters].sort((a, b) => {
+        const numA = parseFloat(a.chapter) || 0;
+        const numB = parseFloat(b.chapter) || 0;
+        return order === 'asc' ? numA - numB : numB - numA;
+    });
+
+    renderChaptersList(sortedChapters);
+};
+
 // Cargar datos al iniciar
 if (mangaId) {
     loadMangaDetails();
@@ -181,6 +205,21 @@ async function loadChapters() {
 
 // Mostrar capítulos
 function displayChapters(chapters) {
+    // Guardar capítulos originales
+    allChapters = chapters;
+
+    // Ordenar según el orden actual (por defecto desc = último primero)
+    const sortedChapters = [...chapters].sort((a, b) => {
+        const numA = parseFloat(a.chapter) || 0;
+        const numB = parseFloat(b.chapter) || 0;
+        return currentSortOrder === 'asc' ? numA - numB : numB - numA;
+    });
+
+    renderChaptersList(sortedChapters);
+}
+
+// Renderizar lista de capítulos
+function renderChaptersList(chapters) {
     chaptersList.innerHTML = chapters.map(chapter => createChapterItem(chapter)).join('');
     chaptersLoading.style.display = 'none';
 

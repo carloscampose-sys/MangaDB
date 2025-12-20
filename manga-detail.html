@@ -275,12 +275,50 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: var(--space-5);
+      flex-wrap: wrap;
+      gap: var(--space-3);
     }
 
     .section-title {
       font-size: var(--text-xl);
       font-weight: 700;
       margin: 0;
+    }
+
+    .sort-buttons {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .sort-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .sort-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    .sort-btn.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    .sort-btn svg {
+      width: 16px;
+      height: 16px;
     }
 
     .chapters-list {
@@ -520,6 +558,20 @@
         <section class="chapters-section">
           <div class="section-header">
             <h2 class="section-title">Capitulos</h2>
+            <div class="sort-buttons">
+              <button class="sort-btn active" id="sortDesc" onclick="sortChapters('desc')" title="Último primero">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                </svg>
+                Último
+              </button>
+              <button class="sort-btn" id="sortAsc" onclick="sortChapters('asc')" title="Primero primero">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
+                </svg>
+                Primero
+              </button>
+            </div>
           </div>
           <div id="chaptersLoading" style="text-align: center; padding: var(--space-8);">
             <div class="spinner" style="margin: 0 auto;"></div>
