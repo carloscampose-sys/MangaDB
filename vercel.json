@@ -8,8 +8,14 @@
             "includeFiles": "_lib/**"
         }
     },
+    "routes": [
+        { "src": "/api/search", "dest": "/api/[[...path]]" },
+        { "src": "/api/manga/(.*)", "dest": "/api/[[...path]]" },
+        { "src": "/api/chapters/(.*)", "dest": "/api/[[...path]]" },
+        { "src": "/api/pages/(.*)", "dest": "/api/[[...path]]" },
+        { "src": "/api/source/(.*)", "dest": "/api/[[...path]]" }
+    ],
     "rewrites": [
-        { "source": "/api/:path*", "destination": "/api/:path*" },
         { "source": "/manga/:path*", "destination": "/manga-detail.html" },
         { "source": "/reader/:path*", "destination": "/reader.html" }
     ],
